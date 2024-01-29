@@ -21,6 +21,10 @@ router.post('/authenticate', actions.authenticate)
 //@route POST /editprofile
 router.post('/editprofile', actions.editprofile)
 
+//@desc Config Chair
+//@route POST /configs
+router.post('/configs', actions.configchair)
+
 //@desc Edit Password
 //@route POST /updatepass
 router.post('/updatepass', actions.updatepass)

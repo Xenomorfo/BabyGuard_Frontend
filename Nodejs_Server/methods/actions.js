@@ -1,10 +1,10 @@
 var User = require('../models/user')
 var Chair = require('../models/chair')
-var Control = require('../models/control')
+var Event = require('../models/event')
 var jwt = require('jwt-simple')
 var config = require('../config/dbconfig')
 var nodemailer = require('nodemailer');
-const {populate} = require("mongoose/lib/utils");
+const {populate, options} = require("mongoose/lib/utils");
 
 var functions = {
     // Novo Utilzador
@@ -19,17 +19,24 @@ var functions = {
 
                 } else
                 {
-                    var newControl = Control({
+                    var newEvent = Event({
                         temperature: 0,
                         humidity: 0,
                         seat: 0,
-                        belt: 0
+                        belt: 0,
+                        car: 1,
+                        timestamp: Date.now()
 
                     });
                     var newChair = Chair({
                             serial: 0,
                             status: 0,
-                            controlId: newControl._id
+                            eventId: newEvent._id,
+                            emergency: [req.body.contact, 0, 0],
+                            lat: '38° 44\' 13.0056\'\' N',
+                            long: '9° 8\' 33.6660\'\' W\n',
+                            blue: 1,
+                            sim: '0000'
 
                         });
 
@@ -44,7 +51,7 @@ var functions = {
                 try {
                     newUser.save();
                     newChair.save();
-                    newControl.save();
+                    newEvent.save();
                     res.json({success: true, msg: 'Successfully saved'})
                 } catch {
                     res.json({success: false, msg: 'Failed to save'})
@@ -69,11 +76,28 @@ var functions = {
                     user.comparePassword(req.body.password, function (err, isMatch) {
                         if (isMatch && !err) {
                             var token = jwt.encode(user, config.secret)
-                            res.json({success: true, token: token, id: user._id, name: user.name, email: user.email, contact: user.contact, password: user.password})
+                            User.findOne(user._id)
+                                .populate({path: 'chairId'})
+                                .exec(function (err, chair) {
+                                    res.json({
+                                        success: true,
+                                        token: token,
+                                        id: user._id,
+                                        name: user.name,
+                                        email: user.email,
+                                        contact: user.contact,
+                                        password: user.password,
+                                        serial: chair.chairId.serial,
+                                        emergency_1: chair.chairId.emergency["0"],
+                                        emergency_2: chair.chairId.emergency["1"],
+                                        emergency_3: chair.chairId.emergency["2"],
+                                        sim: chair.chairId.sim
+                                    })
+                                })
                         }
-                        else {
-                            return res.status(403).send({success: false, msg: 'Wrong password'})
-                        }
+                            else {
+                                return res.status(403).send({success: false, msg: 'Wrong password'})
+                            }
                     })
                 }
         }
@@ -84,12 +108,18 @@ var functions = {
         if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
             var token = req.headers.authorization.split(' ')[1]
             var decodedtoken = jwt.decode(token, config.secret)
-            User.find()
+            User.findOne(req.body._id)
                 .populate({path: 'chairId'})
-                .exec(function (err, docs){
-                console.log(docs)
-                return res.json({success: true, msg: 'Hello ' + docs})
-            });
+                .exec(function(err,chairs) {
+                    Chair.findOne(chairs.eventId)
+                        .populate({path:'eventId'})
+                        .exec(function (err,events) {
+                            console.log(events.temperature)
+                            return res.json({success: true, msg: 'Hello ' + events, temperature: events.temperature})
+                        })
+                })
+
+
             //return res.json({success: true, msg: 'Hello ' + decodedtoken.name})
 
         }
@@ -109,7 +139,37 @@ var functions = {
                 if (err) throw err
                 if (!user) {
                     res.status(403).send({success: false, msg: 'User not found'})
-                } else return res.json({success: true, msg: 'Hello ' + decodedtoken.email})
+                } else {
+                    User.findOne(user._id)
+                        .populate({path: 'chairId'})
+                        .exec(function (err, chair) {
+                            const status = chair.chairId.status;
+                            const serial = chair.chairId.serial;
+                            const lat = chair.chairId.lat;
+                            const long = chair.chairId.long;
+                            const blue = chair.chairId.blue;
+                            const sim = chair.chairId.sim;
+                            Chair.findOne(user.chairId)
+                                .populate({path: 'eventId'})
+                                .exec(function (err, events) {
+                                    return res.json({
+                                        success: true,
+                                        status: status,
+                                        serial: serial,
+                                        lat: lat,
+                                        long: long,
+                                        blue: blue,
+                                        sim: sim,
+                                        temperature: events.eventId.temperature,
+                                        humidity: events.eventId.humidity,
+                                        seat: events.eventId.seat,
+                                        belt: events.eventId.belt,
+                                        car: events.eventId.car
+                                    })
+                                })
+                        })
+                }
+                //return res.json({success: true, msg: 'Hello ' + decodedtoken.email})
             })
         }
 
@@ -121,36 +181,13 @@ var functions = {
     // Atualizar Senha
     updatepass: function (req, res) {
         User.findOne({
-            id: req.body.id
+            _id: req.body.id
         }, function (err, user) {
             if (err) throw err
             if (!user) {
                 res.status(403).send({success: false, msg: 'User not found'})
             } else {
-            user.password = req.body.password;
-            user.save(function (err, user) {
-                if (err) {
-                    res.json({success: false, msg: 'Failed to save'})
-                }
-                else {
-                    res.json({success: true, msg: 'Successfully saved'})
-                }
-            })
-        }
-        });
-    },
-    // Editar Perfil
-    editprofile: function (req, res) {
-        User.findOne({
-            email: req.body.email
-        },function (err, user) {
-            if (err) throw err
-            if (!user) {
-                res.status(403).send({success: false, msg: 'User not found'})
-            } else {
-                user.email = req.body.email;
-                user.name = req.body.name;
-                user.contact = req.body.contact;
+                user.password = req.body.password;
                 user.save(function (err, user) {
                     if (err) {
                         res.json({success: false, msg: 'Failed to save'})
@@ -162,6 +199,71 @@ var functions = {
             }
         });
     },
+    // Editar Perfil
+    editprofile: function (req, res) {
+        User.findOne({
+            email: req.body.email
+        }, function (err, user) {
+            if (err) throw err
+            if (!user) {
+                res.status(403).send({success: false, msg: 'User not found'})
+            } else {
+                User.findOne(user._id)
+                    .populate({path: 'chairId'})
+                    .exec(function (err, user) {
+                        user.email = req.body.email;
+                        user.name = req.body.name;
+                        user.contact = req.body.contact;
+                        Chair.findOne(user.chairId)
+                            .exec(function (err, chair) {
+                                chair.emergency.set("0", req.body.contact);
+                                chair.serial = req.body.serial;
+                                chair.save();
+
+                            })
+                        user.save(function (err, user) {
+                            if (err) {
+                                res.json({success: false, msg: 'Failed to save'})
+                            } else {
+                                res.json({success: true, msg: 'Successfully saved'})
+                            }
+                        })
+
+                    });
+            }
+        });
+    },
+    // Editar Cadeira
+    configchair: function (req, res) {
+        User.findOne({
+            email: req.body.email
+        }, function (err, user) {
+            if (err) throw err
+            if (!user) {
+                res.status(403).send({success: false, msg: 'User not found'})
+            } else {
+                User.findOne(user._id)
+                    .populate({path: 'chairId'})
+                    .exec(function (err, user) {
+                        Chair.findOne(user.chairId)
+                            .exec(function (err, chair) {
+                                chair.serial = req.body.serial;
+                                chair.emergency.set("0", req.body.contact_1);
+                                chair.emergency.set("1", req.body.contact_2);
+                                chair.emergency.set("2", req.body.contact_3);
+                                chair.sim = req.body.sim;
+                                chair.save(function (err, chair) {
+                                    if (err) {
+                                        res.json({success: false, msg: 'Failed to save'})
+                                    } else {
+                                        res.json({success: true, msg: 'Successfully saved'})
+                                    }
+                                })
+                            });
+                        });
+                    }
+                })
+            },
     // Repor Senha
     passrequest: function (req, res) {
         User.findOne({
@@ -172,7 +274,6 @@ var functions = {
                 res.status(403).send({success: false, msg: 'User not found'})
             } else {
             var randomstring = Math.random().toString(36).slice(-8);
-            console.log(randomstring);
             user.password = randomstring;
                 user.save(function (err, user) {
                     if (err) {

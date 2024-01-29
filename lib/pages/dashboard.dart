@@ -2,22 +2,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:myapp/pages/config_chair.dart';
 import 'package:myapp/pages/login.dart';
 import 'package:myapp/pages/edit_profile.dart';
 import 'dart:convert';
 
-import 'package:myapp/pages/nova_password.dart';
+import 'package:myapp/pages/new_password.dart';
 
 class Dashboard extends StatefulWidget {
-  final id;
-  final name;
-  final email;
-  final contact;
-  final password;
-  final token;
+  final user;
 
   const Dashboard(
-      {super.key, this.token, this.id, this.name, this.email,this.contact, this.password});
+      {super.key, required this.user});
   @override
   State<Dashboard> createState() => _DashboardState();
 
@@ -25,7 +21,7 @@ class Dashboard extends StatefulWidget {
 
 class _DashboardState extends State<Dashboard> {
   Future getData() async {
-    String token = widget.token.toString();
+    String token = widget.user["token"].toString();
     var url = 'http://192.168.1.5:3000/dashboard';
     var response = await http.get(
         Uri.parse(url),
@@ -35,7 +31,6 @@ class _DashboardState extends State<Dashboard> {
         'Authorization': 'Bearer $token',
     });
 
-    debugPrint(response.body);
     return json.decode(response.body);
   }
 
@@ -57,16 +52,17 @@ class _DashboardState extends State<Dashboard> {
                   child:  CircleAvatar(
                     backgroundImage: AssetImage("images/bebe_auto_clip.jpg"),
                   )),
-              accountName: Text(widget.name),
+              accountName: Text(widget.user["name"]),
               accountEmail: Text(''),
             ),
             ListTile(
               onTap: () {
                 //debugPrint("dashboard");
+                Navigator.of(context).pop();
               },
               leading: Icon(Icons.dashboard),
               title: Text(
-                'Dashboard',
+                'Painel',
                 style: TextStyle(color: Colors.blue.shade900),
               ),
             ),
@@ -96,12 +92,12 @@ class _DashboardState extends State<Dashboard> {
 
             ListTile(
               onTap: () {
-                //debugPrint("editar perfil");
+                //debugPrint("Edit Profile");
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => Editprofile(
-                        id: widget.id, name: widget.name, email: widget.email, contact: widget.contact.toString(), password: widget.password, token: widget.token),
+                        user: widget.user),
                   ),
                 );
               },
@@ -114,6 +110,13 @@ class _DashboardState extends State<Dashboard> {
             ListTile(
               onTap: () {
                 //debugPrint("dashboard");
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Configchair(
+                        user: widget.user),
+                  ),
+                );
               },
               leading: Icon(Icons.child_care),
               title: Text(
@@ -127,7 +130,7 @@ class _DashboardState extends State<Dashboard> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => NovaPassword(
-                        token: widget.id),
+                        user: widget.user),
                   ),
                 );
               },
@@ -179,40 +182,66 @@ class _DashboardState extends State<Dashboard> {
       );
 
     }
-
-    return Scaffold(
-
+    return WillPopScope(
+        onWillPop: () async {
+          return false;
+        },
+      child: Scaffold(
       appBar: AppBar(
-        title: Text('Dashboard'),
+        title: Text('Painel'),
       ),
       body: FutureBuilder(
         future: getData(),
-        builder: (context, snapshot) {
+          builder: (context, snapshot) {
           if (snapshot.hasData) {
             //return Text(snapshot.data);
-
             return Container(
               padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 2.0),
-              child: GridView.count(
+              child:GridView.count(
                 crossAxisCount: 2,
                 padding: EdgeInsets.all(3.0),
+                scrollDirection: Axis.vertical,
                 children: <Widget>[
-                  makeDashboardItem(snapshot.data['total_nadadores'].toString(),
-                      Icons.numbers_sharp, 'Serie'), // Número de série
-                  makeDashboardItem(
-                      snapshot.data['total_treinadores'].toString(),
+                  if (snapshot.data['status']==1)
+                    makeDashboardItem('Ativo',
                       Icons.bar_chart,
-                      'Estado'), // Estado
-                  makeDashboardItem(snapshot.data['ph'].toString(),
-                      Icons.thermostat, 'Temperatura'), // Temperatura
-                  makeDashboardItem(snapshot.data['agua'].toString() + " ºC",
-                      Icons.present_to_all, 'Presença'), // Presença de criança
-                  makeDashboardItem(
-                      snapshot.data['temperatura'].toString() + " ºC",
-                      Icons.lock,
-                      'Cinto'), // Cinto de segurança
-                  makeDashboardItem(snapshot.data['humidade'].toString() + " %",
-                      Icons.car_rental, 'Viatura') // Estado portas da viatura
+                      'Estado', Color.fromRGBO(0, 150, 0, 1.0))
+                  else makeDashboardItem('Inativo',
+                      Icons.bar_chart,
+                      'Estado', Color.fromRGBO(222, 215, 25, 1.0)),
+                  if (snapshot.data['seat']==1)
+                    makeDashboardItem('Presente',
+                        Icons.present_to_all, 'Criança', Color.fromRGBO(0, 150, 0, 1.0))
+                  else makeDashboardItem('Ausente',
+                      Icons.present_to_all, 'Criança', Color.fromRGBO(222, 215, 25, 1.0)), // Presença de criança
+                  if (snapshot.data['belt']==1)
+                    makeDashboardItem('Fechado',
+                        Icons.lock,'Cinto',Color.fromRGBO(0, 150, 0, 1.0))
+                  else makeDashboardItem('Aberto',
+                      Icons.lock,'Cinto',Color.fromRGBO(222, 215, 25, 1.0)), // Cinto de segurança
+                  if (snapshot.data['car']==1)
+                    makeDashboardItem('Fechada',
+                        Icons.car_rental, 'Viatura',Color.fromRGBO(0, 150, 0, 1.0))
+                  else makeDashboardItem('Aberta',
+                      Icons.car_rental, 'Viatura',Color.fromRGBO(250, 0, 0, 1.0)),// Estado portas da viatura
+                    makeDashboardItem(snapshot.data['lat']+"\n"+snapshot.data['long'],
+                       Icons.gps_fixed,
+                       'Localização', Color.fromRGBO(0, 150, 0, 1.0)),
+                  if (snapshot.data['blue']==1)
+                    makeDashboardItem('Emparelhado',
+                        Icons.bluetooth_connected,'Bluetooth',Color.fromRGBO(0, 150, 0, 1.0))
+                  else makeDashboardItem('Desemparelhado',
+                      Icons.bluetooth,'Bluetooth',Color.fromRGBO(222, 215, 25, 1.0)), // Cinto de segurança
+                  if (snapshot.data['temperature']>30)
+                    makeDashboardItem(snapshot.data['temperature'].toString() + " ºC",
+                      Icons.thermostat, 'Temperatura', Color.fromRGBO(250, 0, 0, 1.0))
+                  else makeDashboardItem(snapshot.data['temperature'].toString() + " ºC",
+                      Icons.thermostat, 'Temperatura', Color.fromRGBO(0, 150, 0, 1.0)), // Temperatura
+                  if (snapshot.data['humidity']>70)
+                    makeDashboardItem(snapshot.data['humidity'].toString() + " %",
+                      Icons.water_drop, 'Humidade',Color.fromRGBO(250, 0, 0, 1.0))
+                  else makeDashboardItem(snapshot.data['humidity'].toString() + " %",
+                      Icons.water_drop, 'Humidade',Color.fromRGBO(0, 150, 0, 1.0)), // Humidade
                 ],
               ),
             );
@@ -222,16 +251,17 @@ class _DashboardState extends State<Dashboard> {
         },
       ),
       drawer: menuDrawer(),
+    )
     );
 
   }
 
-  Card makeDashboardItem(String title, IconData icon, String subtitle) {
+  Card makeDashboardItem(String title, IconData icon, String subtitle, Color color) {
     return Card(
         elevation: 1.0,
         margin: new EdgeInsets.all(8.0),
         child: Container(
-          decoration: BoxDecoration(color: Color.fromRGBO(220, 220, 220, 1.0)),
+          decoration: BoxDecoration(color: color),
           child: new InkWell(
             onTap: () {},
             child: Column(
@@ -250,15 +280,15 @@ class _DashboardState extends State<Dashboard> {
                 new Center(
                   child: new Text(title,
                       style: new TextStyle(
-                          fontSize: 24.0,
+                          fontSize: 15.0,
                           color: Colors.black,
                           fontWeight: FontWeight.bold)),
                 ),
-                SizedBox(height: 10.0),
+                SizedBox(height: 15.0),
                 new Center(
                   child: new Text(subtitle,
                       style:
-                          new TextStyle(fontSize: 24.0, color: Colors.black)),
+                          new TextStyle(fontSize: 20.0, color: Colors.black)),
                 )
               ],
             ),

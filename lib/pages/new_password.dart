@@ -4,8 +4,8 @@ import 'package:myapp/pages/login.dart';
 import 'dart:convert';
 
 class NovaPassword extends StatefulWidget {
-  final String token;
-  const NovaPassword({super.key, required this.token});
+  final user;
+  const NovaPassword({super.key, required this.user});
 
 
   @override
@@ -15,7 +15,14 @@ class NovaPassword extends StatefulWidget {
 class _NovaPasswordState extends State<NovaPassword> {
   TextEditingController password = TextEditingController();
   TextEditingController conf_password = TextEditingController();
+  bool passwordVisible = true;
+  bool confirmPasswordVisible = true;
   final _formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   verifica_password() {
     if (password.text == conf_password.text) {
@@ -42,9 +49,10 @@ class _NovaPasswordState extends State<NovaPassword> {
 
   Future updatePassword() async {
     var url = "http://192.168.1.5:3000/updatepass";
-    debugPrint(widget.token);
-    Map data = {"token": widget.token, "password": password.text};
-
+    Map data = {
+      "id": widget.user['id'],
+      "password": password.text
+    };
     // Encode Map to JSON
     var body = json.encode(data);
 
@@ -113,7 +121,7 @@ class _NovaPasswordState extends State<NovaPassword> {
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  'Nova Password',
+                  'Nova Senha',
                   style: TextStyle(fontFamily: 'Bebas', fontSize: 30),
                 ),
               ),
@@ -129,12 +137,23 @@ class _NovaPasswordState extends State<NovaPassword> {
                       padding: const EdgeInsets.all(8.0),
                       child: Column(
                       children:<Widget> [ TextFormField(
-                        obscureText: true,
+                        obscureText: passwordVisible,
                         enableSuggestions: false,
                         autocorrect: false,
                         controller: password,
                         decoration: InputDecoration(
                           labelText: 'Senha',
+                          suffixIcon: IconButton(
+                          icon: Icon(passwordVisible
+                              ? Icons.visibility
+                              : Icons.visibility_off),
+                          onPressed: () {
+                            setState(
+                                  () {
+                                passwordVisible = !passwordVisible;
+                              },
+                            );
+                          })
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
@@ -144,12 +163,23 @@ class _NovaPasswordState extends State<NovaPassword> {
                         },
                       ),
                       TextFormField(
-                        obscureText: true,
+                        obscureText: confirmPasswordVisible,
                         enableSuggestions: false,
                         autocorrect: false,
                         controller: conf_password,
                         decoration: InputDecoration(
                           labelText: 'Confirmar Senha',
+                          suffixIcon: IconButton(
+                              icon: Icon(confirmPasswordVisible
+                                  ? Icons.visibility
+                                  : Icons.visibility_off),
+                              onPressed: () {
+                                setState(
+                                      () {
+                                    confirmPasswordVisible = !confirmPasswordVisible;
+                                  },
+                                );
+                              })
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {

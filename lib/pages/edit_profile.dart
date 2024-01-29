@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'package:myapp/pages/dashboard.dart';
 
 class Editprofile extends StatefulWidget {
-  final id;
-  final name;
-  final email;
-  final contact;
-  final password;
-  final token;
 
-  const Editprofile({super.key, required this.id, this.name, this.email, this.contact, this.password, required this.token});
+  final user;
+
+  const Editprofile({super.key, required this.user});
 
   @override
   State<Editprofile> createState() => _EditprofileState();
@@ -22,18 +19,23 @@ class _EditprofileState extends State<Editprofile> {
   TextEditingController name = TextEditingController();
   TextEditingController contact = TextEditingController();
   TextEditingController email = TextEditingController();
+  TextEditingController serial = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
 
   Future editProfile() async {
     var url = "http://192.168.1.5:3000/editprofile";
-    if (name.text.isEmpty) name.text = widget.name;
-    if (contact.text.isEmpty) contact.text = widget.contact;
     Map data = {
       "name": name.text,
-      "contact": contact.text,
-      "email": widget.email
+      "contact": int.parse(contact.text),
+      "email": widget.user["email"],
+      "serial": serial.text
     };
-
+    widget.user["email"] = data["email"];
+    widget.user["contact"] = data["contact"];
+    widget.user["name"] = data["name"];
+    widget.user["serial"] = data["serial"];
+    widget.user["emergency_1"] = data["contact"];
     // Encode Map to JSON
     var body = json.encode(data);
     var response = await http.post(Uri.parse(url),
@@ -85,9 +87,10 @@ class _EditprofileState extends State<Editprofile> {
   @override
   void initState() {
     super.initState();
-    if (widget.id != null) {
-      if(name.text.isEmpty) name.text=widget.name;
-      if(contact.text.isEmpty) contact.text=widget.contact;
+    if (widget.user["id"] != null) {
+      if(name.text.isEmpty) name.text=widget.user["name"];
+      if(contact.text.isEmpty) contact.text=widget.user["contact"].toString();
+      if(serial.text.isEmpty) serial.text=widget.user["serial"];
     }
   }
 
@@ -116,56 +119,81 @@ class _EditprofileState extends State<Editprofile> {
               top: 120,
               child: Container(
                 width: MediaQuery.of(context).size.width,
+                child: Form(
+                  autovalidateMode: AutovalidateMode.onUserInteraction, // this to show error when user is in some textField
+                  key: _formKey,
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: TextField(
-                    readOnly: true,
-                    controller: email,
+                  child: Column (
+                    children:<Widget> [
+                      TextFormField(
+                        readOnly: true,
+                        controller: email,
+                        decoration: InputDecoration(
+                          labelText: "E-mail",
+                          hintText: widget.user["email"],
+                          floatingLabelBehavior: FloatingLabelBehavior.always,
+                        ),
+
+                      ),
+                      TextFormField(
+                        controller: name,
+                        decoration: InputDecoration(
+                          hintText: widget.user["name"],
+                          labelText: "Name",
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Insira um nome válido!';
+                          }
+                          return null;
+                        },
+                      ),
+                      TextFormField(
+                          controller: contact,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: <TextInputFormatter>[
+                            // for below version 2 use this
+                            FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+                            // for version 2 and greater youcan also use this
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
+                          decoration: InputDecoration(
+                            hintText: widget.user["contact"].toString(),
+                            labelText: "Contacto",
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Insira um contacto válido!';
+                            }
+                            return null;
+                          },
+                        ),
+
+                  TextFormField(
+                    controller: serial,
                     decoration: InputDecoration(
-                      labelText: "E-mail",
-                      hintText: widget.email,
-                      floatingLabelBehavior: FloatingLabelBehavior.always,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              top: 190,
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TextField(
-                    controller: name,
-                    decoration: InputDecoration(
-                      hintText: widget.name,
-                      labelText: "Name",
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              top: 260,
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TextField(
-                    controller: contact,
-                    decoration: InputDecoration(
-                      hintText: widget.contact,
-                      labelText: "Contacto",
+                      hintText: widget.user["serial"],
+                      labelText: "Número de Série da Cadeira",
 
                     ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Insira um número de série válido!';
+                      }
+                      return null;
+                    },
                   ),
+                    ],
+                  ),
+                ),
                 ),
               ),
             ),
 
+
             Positioned(
-              top: 400,
+              top: 430,
               child: Container(
                 width: MediaQuery.of(context).size.width,
                 child: Padding(
@@ -177,20 +205,20 @@ class _EditprofileState extends State<Editprofile> {
                         style: TextStyle(color: Colors.white),
                       ),
                       onPressed: () {
-                        editProfile();
+                        if(_formKey.currentState!.validate()) editProfile();
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => Dashboard(
-                                    id: widget.id, name: name.text, email: widget.email, contact: contact.text, password: widget.password, token: widget.token)
-                          ),
+                                   user: widget.user)),
                         );
-
                       },
-                    )),
+                    ),
+                ),
               ),
             ),
           ],
-        ));
+        ),
+    );
   }
 }

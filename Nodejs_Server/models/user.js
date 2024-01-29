@@ -20,13 +20,14 @@ var userSchema = new Schema({
         type: String,
         require: true
     },
-    chairId: [{
-    type: mongoose.Schema.Types.ObjectId,
-        ref:'Chair',
+    chairId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Chair',
         require: true
-    }]
-
-})
+    }
+}, {
+    versionKey: false
+});
 
 
 

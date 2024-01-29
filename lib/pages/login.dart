@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/pages/signup.dart';
-import 'package:myapp/pages/repor_password.dart';
+import 'package:myapp/pages/renew_password.dart';
 import 'package:myapp/pages/dashboard.dart';
-import 'package:myapp/pages/nova_password.dart';
+import 'package:myapp/pages/new_password.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
@@ -33,7 +33,7 @@ class _MyHomePageState extends State<MyHomePage> {
           Navigator.of(context).push(
             MaterialPageRoute(
               builder: (context) =>
-                  NovaPassword(token: uri.queryParameters['token'].toString()),
+                  NovaPassword(user: uri.queryParameters['id']),
             ),
           );
         }
@@ -101,12 +101,14 @@ class _MyHomePageState extends State<MyHomePage> {
         context,
         MaterialPageRoute(
           builder: (context) => Dashboard(
-              id: userData["id"],
+              user: userData,
+              /*id: userData["id"],
               name: userData["name"],
               email: userData["email"],
               contact: userData["contact"],
+              serial: userData["serial"],
               password: userData["password"],
-              token: userData["token"])
+              token: userData["token"]*/)
         ),
       );
 
@@ -131,152 +133,165 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: new Center(child: Text('Baby Guard')),
-          backgroundColor: Colors.grey[100],
-          foregroundColor: Colors.blue[900],
-          automaticallyImplyLeading: false, // Nao permite voltar atras
-        ),
-        body: Stack(
-          children: [
-            Container(
-              color: Colors.grey[100],
-            ),
-            Align(
-              alignment: Alignment.topCenter,
+    return WillPopScope(
+        onWillPop: () async {
+          return false;
+        },
+        child: Scaffold(
 
-                  child:  CircleAvatar(
-                    backgroundImage: AssetImage("images/bebe_auto_clip.jpg"),
-                    radius:100,
+          appBar: AppBar(
 
+            title: new Center(child: Text('Baby Guard')),
+            backgroundColor: Colors.grey[100],
+            foregroundColor: Colors.blue[900],
+            automaticallyImplyLeading: false, // Nao permite voltar atras
+          ),
+          body: Stack(
+            children: [
+              Container(
+                //color: Colors.grey[100],
+                decoration: BoxDecoration(
+                  border: Border(
+                    left: BorderSide(width: 1.0, color: Colors.black),
+                    right: BorderSide(width: 1.0, color: Colors.black),
                   ),
-
-            ),
-
-
-            Positioned(
-              top: 190,
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                child: Form(
-                  autovalidateMode: AutovalidateMode.onUserInteraction, // this to show error when user is in some textField
-                  key: _formKey,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column (
-                    children:<Widget> [
-                      TextFormField(
-                      controller: email,
-                      decoration: InputDecoration(
-                        labelText: 'E-mail',
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Insira um e-mail válido!';
-                        }
-                        return null;
-                      },
-
+                ),
+              ),
+              Align(
+                alignment: Alignment.topCenter,
+                    child:  CircleAvatar(
+                      backgroundImage: AssetImage("images/bebe_auto_clip.jpg"),
+                      radius:100,
                     ),
-                      TextFormField(
-                        obscureText: passwordVisible,
-                        controller: password,
-                        decoration: InputDecoration(
-                          labelText: 'Password',
-                          suffixIcon: IconButton(
-                            icon: Icon(passwordVisible
-                                ? Icons.visibility
-                                : Icons.visibility_off),
-                            onPressed: () {
-                              setState(
-                                    () {
-                                  passwordVisible = !passwordVisible;
-                                },
-                              );
-                            },
+              ),
 
-                          ),
+
+              Positioned(
+                top: 190,
+                child: Container(
+                  width: MediaQuery.of(context).size.width,
+
+                  child: Form(
+                    autovalidateMode: AutovalidateMode.onUserInteraction, // this to show error when user is in some textField
+                    key: _formKey,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column (
+                      children:<Widget> [
+                        TextFormField(
+                        controller: email,
+                        decoration: InputDecoration(
+                          labelText: 'E-mail',
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Insira uma senha válida!';
+                            return 'Insira um e-mail válido!';
                           }
                           return null;
                         },
-                      ),
 
-                    ],
-                  ),
+                      ),
+                        TextFormField(
+                          obscureText: passwordVisible,
+                          controller: password,
+                          decoration: InputDecoration(
+                            labelText: 'Password',
+                            suffixIcon: IconButton(
+                              icon: Icon(passwordVisible
+                                  ? Icons.visibility
+                                  : Icons.visibility_off),
+                              onPressed: () {
+                                setState(
+                                      () {
+                                    passwordVisible = !passwordVisible;
+                                  },
+                                );
+                              },
+
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Insira uma senha válida!';
+                            }
+                            return null;
+                          },
+                        ),
+
+                      ],
+                    ),
+                    ),
                   ),
                 ),
               ),
-            ),
 
-            Positioned(
-              top: 360,
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                child: Padding(
+              Positioned(
+                top: 360,
+                child: Container(
+                  width: MediaQuery.of(context).size.width,
+                  child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: MaterialButton(
+                        color: Colors.lightBlue,
+                        child: Text(
+                          "Login",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        onPressed: () {
+                          if(_formKey.currentState!.validate()) login();
+                        },
+                      )),
+                ),
+              ),
+              Positioned(
+                top: 400,
+                child: Container(
+                  width: MediaQuery.of(context).size.width,
+                  child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: MaterialButton(
-                      color: Colors.lightBlue,
                       child: Text(
-                        "Login",
-                        style: TextStyle(color: Colors.white),
+                        "Repor Senha",
+                        style: TextStyle(color: Colors.grey),
                       ),
                       onPressed: () {
-                        if(_formKey.currentState!.validate()) login();
+                        //debugPrint("signup");
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => ReporPassword()),
+                        );
                       },
-                    )),
-              ),
-            ),
-            Positioned(
-              top: 400,
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: MaterialButton(
-                    child: Text(
-                      "Repor Senha",
-                      style: TextStyle(color: Colors.grey),
                     ),
-                    onPressed: () {
-                      //debugPrint("signup");
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => ReporPassword()),
-                      );
-                    },
                   ),
                 ),
               ),
-            ),
-            Positioned(
-              top: 440,
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: MaterialButton(
-                    child: Text(
-                      "Registar-se",
-                      style: TextStyle(color: Colors.grey),
+              Positioned(
+                top: 440,
+                child: Container(
+                  width: MediaQuery.of(context).size.width,
+
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: MaterialButton(
+                      child: Text(
+                        "Registar-se",
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                      onPressed: () {
+                        //debugPrint("signup");
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => Signup()),
+                        );
+                      },
                     ),
-                    onPressed: () {
-                      //debugPrint("signup");
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => Signup()),
-                      );
-                    },
                   ),
                 ),
               ),
-            ),
-          ],
-        ));
+            ],
+          )
+      )
+    );
   }
 }
