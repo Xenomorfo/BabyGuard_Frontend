@@ -92,7 +92,7 @@ class _DashboardState extends State<Dashboard> {
 
             ListTile(
               onTap: () {
-                //debugPrint("Edit Profile");
+                //debugPrint(widget.user["serial"]);
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -173,7 +173,7 @@ class _DashboardState extends State<Dashboard> {
               },
               leading: Icon(Icons.logout),
               title: Text(
-                'Logout',
+                'Sair',
                 style: TextStyle(color: Colors.blue.shade900),
               ),
             )

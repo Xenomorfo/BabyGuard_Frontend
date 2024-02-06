@@ -62,6 +62,7 @@ class _MyHomePageState extends State<MyHomePage> {
         headers: {"Content-Type": "application/json"}, body: body);
 
     var userData = json.decode(response.body);
+    debugPrint(userData["chairId"]);
     if (userData['msg'] == 'User not found') {
       showDialog(
         context: context,
@@ -116,7 +117,7 @@ class _MyHomePageState extends State<MyHomePage> {
         context: context,
         builder: (context) => AlertDialog(
           title: Text("Olá " + userData['name'] ),
-          content: Text("Login bem-sucedido"),
+          content: Text("Autênticação bem-sucedida"),
           actions: [
             MaterialButton(
               color: Colors.lightBlue,

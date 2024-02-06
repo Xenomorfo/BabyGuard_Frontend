@@ -19,26 +19,26 @@ var functions = {
 
                 } else
                 {
+                    var newChair = Chair({
+                        serial: 0,
+                        status: 0,
+                        emergency: [req.body.contact, 0, 0],
+                        sim: '0000'
+                    });
                     var newEvent = Event({
                         temperature: 0,
                         humidity: 0,
                         seat: 0,
                         belt: 0,
                         car: 1,
+                        lat: '38° 44\' 13.0056\'\' N',
+                        long: '9° 8\' 33.6660\'\' W\n',
+                        blue: 1,
+                        chairId: newChair._id,
                         timestamp: Date.now()
 
                     });
-                    var newChair = Chair({
-                            serial: 0,
-                            status: 0,
-                            eventId: newEvent._id,
-                            emergency: [req.body.contact, 0, 0],
-                            lat: '38° 44\' 13.0056\'\' N',
-                            long: '9° 8\' 33.6660\'\' W\n',
-                            blue: 1,
-                            sim: '0000'
 
-                        });
 
                     var newUser = User({
                         name: req.body.name,
@@ -78,21 +78,30 @@ var functions = {
                             var token = jwt.encode(user, config.secret)
                             User.findOne(user._id)
                                 .populate({path: 'chairId'})
-                                .exec(function (err, chair) {
-                                    res.json({
-                                        success: true,
-                                        token: token,
-                                        id: user._id,
-                                        name: user.name,
-                                        email: user.email,
-                                        contact: user.contact,
-                                        password: user.password,
-                                        serial: chair.chairId.serial,
-                                        emergency_1: chair.chairId.emergency["0"],
-                                        emergency_2: chair.chairId.emergency["1"],
-                                        emergency_3: chair.chairId.emergency["2"],
-                                        sim: chair.chairId.sim
-                                    })
+                                .exec(function (err, user) {
+                                    const id = user._id;
+                                    const name =  user.name;
+                                    const email = user.email;
+                                    const contact = user.contact;
+                                    const password = user.password;
+                                    Chair.findOne(user.chairId)
+                                        .populate({path: 'chairId'})
+                                        .exec(function (err, chair) {
+                                            res.json({
+                                                success: true,
+                                                token: token,
+                                                id: id,
+                                                name: name,
+                                                email: email,
+                                                contact: contact,
+                                                password: password,
+                                                serial: chair.serial,
+                                                emergency_1: chair.emergency["0"],
+                                                emergency_2: chair.emergency["1"],
+                                                emergency_3: chair.emergency["2"],
+                                                sim: chair.sim
+                                            })
+                                        })
                                 })
                         }
                             else {
@@ -143,28 +152,23 @@ var functions = {
                     User.findOne(user._id)
                         .populate({path: 'chairId'})
                         .exec(function (err, chair) {
-                            const status = chair.chairId.status;
                             const serial = chair.chairId.serial;
-                            const lat = chair.chairId.lat;
-                            const long = chair.chairId.long;
-                            const blue = chair.chairId.blue;
                             const sim = chair.chairId.sim;
-                            Chair.findOne(user.chairId)
+                            Event.findOne({chairId: user.chairId})
                                 .populate({path: 'eventId'})
                                 .exec(function (err, events) {
                                     return res.json({
                                         success: true,
-                                        status: status,
                                         serial: serial,
-                                        lat: lat,
-                                        long: long,
-                                        blue: blue,
+                                        lat: events.lat,
+                                        long: events.long,
+                                        blue: events.blue,
                                         sim: sim,
-                                        temperature: events.eventId.temperature,
-                                        humidity: events.eventId.humidity,
-                                        seat: events.eventId.seat,
-                                        belt: events.eventId.belt,
-                                        car: events.eventId.car
+                                        temperature: events.temperature,
+                                        humidity: events.humidity,
+                                        seat: events.seat,
+                                        belt: events.belt,
+                                        car: events.car
                                     })
                                 })
                         })
@@ -210,12 +214,14 @@ var functions = {
             } else {
                 User.findOne(user._id)
                     .populate({path: 'chairId'})
-                    .exec(function (err, user) {
-                        user.email = req.body.email;
-                        user.name = req.body.name;
-                        user.contact = req.body.contact;
-                        Chair.findOne(user.chairId)
+                    .exec(function (err, users) {
+                        users.email = req.body.email;
+                        users.name = req.body.name;
+                        users.contact = req.body.contact;
+                        console.log(users);
+                        Chair.findOne(users.chairId)
                             .exec(function (err, chair) {
+
                                 chair.emergency.set("0", req.body.contact);
                                 chair.serial = req.body.serial;
                                 chair.save();

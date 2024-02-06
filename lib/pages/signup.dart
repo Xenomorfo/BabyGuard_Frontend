@@ -212,7 +212,7 @@ class _SignupState extends State<Signup> {
 
 
               Positioned(
-                top: 510,
+                top: 430,
                 child: Container(
                   width: MediaQuery.of(context).size.width,
                   child: Padding(
@@ -230,7 +230,7 @@ class _SignupState extends State<Signup> {
                 ),
               ),
               Positioned(
-                top: 550,
+                top: 470,
                 child: Container(
                   width: MediaQuery.of(context).size.width,
                   child: Padding(

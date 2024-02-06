@@ -8,31 +8,12 @@ var chairSchema = new Schema({
         type: String,
         require: false
     },
-    status: {
-        type: Number,
-        require: false
-    },
-    eventId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Event',
-        require: true
-    },
+
     emergency: [{
         type: Number,
         require: true
     }],
-    lat: {
-        type: String,
-        require: false
-    },
-    long: {
-        type: String,
-        require: false
-    },
-    blue: {
-        type: Number,
-        require: false
-    },
+
     sim: {
         type: String,
         require: false

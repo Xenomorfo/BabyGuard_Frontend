@@ -23,6 +23,23 @@ var eventSchema = new Schema({
         type: Number,
         require: false
     },
+    lat: {
+        type: String,
+        require: false
+    },
+    long: {
+        type: String,
+        require: false
+    },
+    blue: {
+        type: Number,
+        require: false
+    },
+    chairId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Chair',
+        require: true
+    },
     timestamp: {
         type:Number,
         require:false
