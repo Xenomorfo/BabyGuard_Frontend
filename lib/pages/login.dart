@@ -62,7 +62,6 @@ class _MyHomePageState extends State<MyHomePage> {
         headers: {"Content-Type": "application/json"}, body: body);
 
     var userData = json.decode(response.body);
-    debugPrint(userData["chairId"]);
     if (userData['msg'] == 'User not found') {
       showDialog(
         context: context,

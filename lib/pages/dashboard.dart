@@ -2,12 +2,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:myapp/pages/config_chair.dart';
 import 'package:myapp/pages/login.dart';
 import 'package:myapp/pages/edit_profile.dart';
 import 'dart:convert';
-
 import 'package:myapp/pages/new_password.dart';
+import 'history.dart';
+import 'map.dart';
 
 class Dashboard extends StatefulWidget {
   final user;
@@ -30,13 +32,15 @@ class _DashboardState extends State<Dashboard> {
         'Accept': 'application/json',
         'Authorization': 'Bearer $token',
     });
-
+    widget.user['lat'] = jsonDecode(response.body)['events']['lat'];
+    widget.user['long'] = jsonDecode(response.body)['events']['long'];
     return json.decode(response.body);
   }
 
   @override
   void initState() {
     super.initState();
+
   }
 
 
@@ -69,6 +73,13 @@ class _DashboardState extends State<Dashboard> {
 
             ListTile(
               onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Maps(
+                        user: widget.user),
+                  ),
+                );
                 //debugPrint("dashboard");
               },
               leading: Icon(Icons.map),
@@ -80,7 +91,13 @@ class _DashboardState extends State<Dashboard> {
 
             ListTile(
               onTap: () {
-                //debugPrint("dashboard");
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => History(
+                        user: widget.user),
+                  ),
+                );
               },
               leading: Icon(Icons.hourglass_empty),
               title: Text(
@@ -202,45 +219,41 @@ class _DashboardState extends State<Dashboard> {
                 padding: EdgeInsets.all(3.0),
                 scrollDirection: Axis.vertical,
                 children: <Widget>[
-                  if (snapshot.data['status']==1)
-                    makeDashboardItem('Ativo',
-                      Icons.bar_chart,
-                      'Estado', Color.fromRGBO(0, 150, 0, 1.0))
-                  else makeDashboardItem('Inativo',
-                      Icons.bar_chart,
-                      'Estado', Color.fromRGBO(222, 215, 25, 1.0)),
-                  if (snapshot.data['seat']==1)
+                  makeDashboardItem(readTimestamp(snapshot.data['events']['timestamp']).toString(),
+                      Icons.timelapse,
+                      'Ultimo Evento', Color.fromRGBO(160, 160, 160, 1.0)),
+                  if (snapshot.data['events']['seat']==1)
                     makeDashboardItem('Presente',
                         Icons.present_to_all, 'Criança', Color.fromRGBO(0, 150, 0, 1.0))
                   else makeDashboardItem('Ausente',
                       Icons.present_to_all, 'Criança', Color.fromRGBO(222, 215, 25, 1.0)), // Presença de criança
-                  if (snapshot.data['belt']==1)
+                  if (snapshot.data['events']['belt']==1)
                     makeDashboardItem('Fechado',
                         Icons.lock,'Cinto',Color.fromRGBO(0, 150, 0, 1.0))
                   else makeDashboardItem('Aberto',
                       Icons.lock,'Cinto',Color.fromRGBO(222, 215, 25, 1.0)), // Cinto de segurança
-                  if (snapshot.data['car']==1)
+                  if (snapshot.data['events']['car']==1)
                     makeDashboardItem('Fechada',
                         Icons.car_rental, 'Viatura',Color.fromRGBO(0, 150, 0, 1.0))
                   else makeDashboardItem('Aberta',
                       Icons.car_rental, 'Viatura',Color.fromRGBO(250, 0, 0, 1.0)),// Estado portas da viatura
-                    makeDashboardItem(snapshot.data['lat']+"\n"+snapshot.data['long'],
+                    makeDashboardItem(snapshot.data['events']['lat'].toString()+"\n"+snapshot.data['events']['long'].toString(),
                        Icons.gps_fixed,
                        'Localização', Color.fromRGBO(0, 150, 0, 1.0)),
-                  if (snapshot.data['blue']==1)
+                  if (snapshot.data['events']['blue']==1)
                     makeDashboardItem('Emparelhado',
                         Icons.bluetooth_connected,'Bluetooth',Color.fromRGBO(0, 150, 0, 1.0))
                   else makeDashboardItem('Desemparelhado',
                       Icons.bluetooth,'Bluetooth',Color.fromRGBO(222, 215, 25, 1.0)), // Cinto de segurança
-                  if (snapshot.data['temperature']>30)
-                    makeDashboardItem(snapshot.data['temperature'].toString() + " ºC",
+                  if (snapshot.data['events']['temperature']>30)
+                    makeDashboardItem(snapshot.data['events']['temperature'].toString() + " ºC",
                       Icons.thermostat, 'Temperatura', Color.fromRGBO(250, 0, 0, 1.0))
-                  else makeDashboardItem(snapshot.data['temperature'].toString() + " ºC",
+                  else makeDashboardItem(snapshot.data['events']['temperature'].toString() + " ºC",
                       Icons.thermostat, 'Temperatura', Color.fromRGBO(0, 150, 0, 1.0)), // Temperatura
-                  if (snapshot.data['humidity']>70)
-                    makeDashboardItem(snapshot.data['humidity'].toString() + " %",
+                  if (snapshot.data['events']['humidity']>70)
+                    makeDashboardItem(snapshot.data['events']['humidity'].toString() + " %",
                       Icons.water_drop, 'Humidade',Color.fromRGBO(250, 0, 0, 1.0))
-                  else makeDashboardItem(snapshot.data['humidity'].toString() + " %",
+                  else makeDashboardItem(snapshot.data['events']['humidity'].toString() + " %",
                       Icons.water_drop, 'Humidade',Color.fromRGBO(0, 150, 0, 1.0)), // Humidade
                 ],
               ),
@@ -261,7 +274,9 @@ class _DashboardState extends State<Dashboard> {
         elevation: 1.0,
         margin: new EdgeInsets.all(8.0),
         child: Container(
-          decoration: BoxDecoration(color: color),
+          decoration: BoxDecoration(color: color,
+              borderRadius: BorderRadius.all(Radius.circular(20))
+          ),
           child: new InkWell(
             onTap: () {},
             child: Column(
@@ -273,10 +288,10 @@ class _DashboardState extends State<Dashboard> {
                 Center(
                     child: Icon(
                   icon,
-                  size: 40.0,
+                  size: 30.0,
                   color: Colors.black,
                 )),
-                SizedBox(height: 15.0),
+                SizedBox(height: 10.0),
                 new Center(
                   child: new Text(title,
                       style: new TextStyle(
@@ -284,7 +299,7 @@ class _DashboardState extends State<Dashboard> {
                           color: Colors.black,
                           fontWeight: FontWeight.bold)),
                 ),
-                SizedBox(height: 15.0),
+                SizedBox(height: 5.0),
                 new Center(
                   child: new Text(subtitle,
                       style:
@@ -294,5 +309,32 @@ class _DashboardState extends State<Dashboard> {
             ),
           ),
         ));
+  }
+
+  String readTimestamp(int timestamp) {
+    var now = DateTime.now();
+    var format = DateFormat('yyyy-MM-dd HH:mm');
+    var date = DateTime.fromMillisecondsSinceEpoch(timestamp);
+    var diff = now.difference(date);
+    var time = '';
+
+    if (diff.inSeconds <= 0 || diff.inSeconds > 0 && diff.inMinutes == 0 || diff.inMinutes > 0 && diff.inHours == 0 || diff.inHours > 0 && diff.inDays == 0) {
+      time = format.format(date);
+    } else if (diff.inDays > 0 && diff.inDays < 7) {
+      if (diff.inDays == 1) {
+        time = 'HÁ ' + diff.inDays.toString() + ' DIA(S) ATRÁS';
+      } else {
+        time = 'HÁ ' + diff.inDays.toString() + ' DIA(S) ATRÁS';
+      }
+    } else {
+      if (diff.inDays == 7) {
+        time = 'HÁ' + (diff.inDays / 7).floor().toString() + ' SEMANA(S) ATRÁS';
+      } else {
+
+        time = 'HÁ ' + (diff.inDays / 7).floor().toString() + ' SEMANA(S) ATRÁS';
+      }
+    }
+
+    return time;
   }
 }

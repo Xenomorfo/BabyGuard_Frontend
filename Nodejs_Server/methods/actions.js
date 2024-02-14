@@ -5,6 +5,7 @@ var jwt = require('jwt-simple')
 var config = require('../config/dbconfig')
 var nodemailer = require('nodemailer');
 const {populate, options} = require("mongoose/lib/utils");
+const e = require("express");
 
 var functions = {
     // Novo Utilzador
@@ -31,8 +32,8 @@ var functions = {
                         seat: 0,
                         belt: 0,
                         car: 1,
-                        lat: '38° 44\' 13.0056\'\' N',
-                        long: '9° 8\' 33.6660\'\' W\n',
+                        lat: 38.7324,
+                        long: -9.1567,
                         blue: 1,
                         chairId: newChair._id,
                         timestamp: Date.now()
@@ -156,26 +157,53 @@ var functions = {
                             const sim = chair.chairId.sim;
                             Event.findOne({chairId: user.chairId})
                                 .populate({path: 'eventId'})
+                                .sort({timestamp: -1})
+                                .limit(1)
                                 .exec(function (err, events) {
                                     return res.json({
                                         success: true,
                                         serial: serial,
-                                        lat: events.lat,
-                                        long: events.long,
-                                        blue: events.blue,
                                         sim: sim,
-                                        temperature: events.temperature,
-                                        humidity: events.humidity,
-                                        seat: events.seat,
-                                        belt: events.belt,
-                                        car: events.car
+                                        events: events
                                     })
+
                                 })
                         })
                 }
                 //return res.json({success: true, msg: 'Hello ' + decodedtoken.email})
             })
-        }
+            }
+        },
+
+        // Ver Historico
+        history: function (req, res) {
+            if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+                var token = req.headers.authorization.split(' ')[1]
+                var decodedtoken = jwt.decode(token, config.secret)
+                User.findOne({
+                    email: decodedtoken.email
+                }, function (err, user) {
+                    if (err) throw err
+                    if (!user) {
+                        res.status(403).send({success: false, msg: 'User not found'})
+                    } else {
+                        User.findOne(user._id)
+                            .populate({path: 'chairId'})
+                            .exec(function (err, chair) {
+                                Event.find({chairId: user.chairId})
+                                    .populate({path: 'eventId'})
+                                    .exec(function (err, events) {
+                                        return res.json({
+                                            success: true,
+                                            events: events
+                                        })
+
+                                    })
+                            })
+                    }
+                    //return res.json({success: true, msg: 'Hello ' + decodedtoken.email})
+                })
+            }
 
         else {
             return res.sendStatus(403);

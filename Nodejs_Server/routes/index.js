@@ -9,6 +9,10 @@ router.get('/', (req, res) => {
 //@route GET /dashboard
 router.get('/dashboard', actions.dashboard)
 
+//@desc Historico
+//@route GET /history
+router.get('/history', actions.history)
+
 //@desc Adding new user
 //@route POST /adduser
 router.post('/adduser', actions.addNew)

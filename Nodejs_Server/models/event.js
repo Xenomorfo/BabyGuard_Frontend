@@ -24,11 +24,11 @@ var eventSchema = new Schema({
         require: false
     },
     lat: {
-        type: String,
+        type: Number,
         require: false
     },
     long: {
-        type: String,
+        type: Number,
         require: false
     },
     blue: {
