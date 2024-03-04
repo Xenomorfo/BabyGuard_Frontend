@@ -19,7 +19,7 @@ class History extends StatefulWidget {
 class _HistoryState extends State<History> {
   Future getData() async {
     String token = widget.user["token"].toString();
-    var url = 'http://192.168.1.5:3000/history';
+    var url = 'http://xenomorfo.ddns.net:3000/history';
     var response = await http.get(
         Uri.parse(url),
         headers: {

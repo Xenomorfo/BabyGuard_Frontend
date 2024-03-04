@@ -26,7 +26,7 @@ class _ConfigchairState extends State<Configchair> {
 
 
   Future configChair() async {
-    var url = "http://192.168.1.5:3000/configs";
+    var url = "http://xenomorfo.ddns.net:3000/configs";
     Map data = {
       "email": widget.user["email"],
       "serial": widget.user["serial"],

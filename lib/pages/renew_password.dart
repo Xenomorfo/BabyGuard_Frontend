@@ -15,7 +15,7 @@ class _ReporPasswordState extends State<ReporPassword> {
   final _formKey = GlobalKey<FormState>();
 
   Future reporPassword() async {
-    var url = "http://192.168.1.5:3000/requestpass";
+    var url = "http://xenomorfo.ddns.net:3000/requestpass";
 
     Map data = {"email": email.text};
 

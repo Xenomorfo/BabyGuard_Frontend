@@ -48,7 +48,7 @@ class _NovaPasswordState extends State<NovaPassword> {
   }
 
   Future updatePassword() async {
-    var url = "http://192.168.1.5:3000/updatepass";
+    var url = "http://xenomorfo.ddns.net:3000/updatepass";
     Map data = {
       "id": widget.user['id'],
       "password": password.text

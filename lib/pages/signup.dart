@@ -20,7 +20,7 @@ class _SignupState extends State<Signup> {
   final _formKey = GlobalKey<FormState>();
 
   Future signUp() async {
-    var url = "http://192.168.1.5:3000/adduser";
+    var url = "http://xenomorfo.ddns.net:3000/adduser";
 
     Map data = {
       "name": name.text,

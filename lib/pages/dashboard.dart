@@ -24,7 +24,7 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   Future getData() async {
     String token = widget.user["token"].toString();
-    var url = 'http://192.168.1.5:3000/dashboard';
+    var url = 'http://xenomorfo.ddns.net:3000/dashboard';
     var response = await http.get(
         Uri.parse(url),
         headers: {

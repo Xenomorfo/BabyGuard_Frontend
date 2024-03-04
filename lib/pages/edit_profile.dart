@@ -24,7 +24,7 @@ class _EditprofileState extends State<Editprofile> {
 
 
   Future editProfile() async {
-    var url = "http://192.168.1.5:3000/editprofile";
+    var url = "http://xenomorfo.ddns.net:3000/editprofile";
     Map data = {
       "name": name.text,
       "contact": int.parse(contact.text),

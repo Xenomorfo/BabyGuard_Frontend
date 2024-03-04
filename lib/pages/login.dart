@@ -52,16 +52,36 @@ class _MyHomePageState extends State<MyHomePage> {
   TextEditingController password = TextEditingController();
 
   Future login() async {
-    var url = "http://192.168.1.5:3000/authenticate";
+    var url = "http://xenomorfo.ddns.net:3000/authenticate";
     Map data = {"email": email.text, "password": password.text};
 
     // Encode Map to JSON
     var body = json.encode(data);
-
-    var response = await http.post(Uri.parse(url),
-        headers: {"Content-Type": "application/json"}, body: body);
-
+    var response;
+    try {
+      response = await http.post(Uri.parse(url),
+          headers: {"Content-Type": "application/json"}, body: body);
+    } catch(error) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text("Erro"),
+          content: Text("Servidor fora de serviço!"),
+          actions: [
+            MaterialButton(
+              color: Colors.red,
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text("Ok"),
+            )
+          ],
+        ),
+      );
+      throw Exception();
+    }
     var userData = json.decode(response.body);
+
     if (userData['msg'] == 'User not found') {
       showDialog(
         context: context,
