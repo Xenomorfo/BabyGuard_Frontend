@@ -55,7 +55,6 @@ class _HistoryState extends State<History> {
                 children: <Widget>[
                   for (int i=0; i < snapshot.data['events'].length;i++)
                     makeHistoryItem(snapshot.data['events'][i]),
-
                 ],
               ),
             );

@@ -19,7 +19,6 @@ class _ConfigchairState extends State<Configchair> {
   TextEditingController emergency_1 = TextEditingController();
   TextEditingController emergency_2 = TextEditingController();
   TextEditingController emergency_3 = TextEditingController();
-  TextEditingController sim = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
 
@@ -33,13 +32,11 @@ class _ConfigchairState extends State<Configchair> {
       "contact_1": widget.user["emergency_1"],
       "contact_2": int.parse(emergency_2.text),
       "contact_3": int.parse(emergency_3.text),
-      "sim": sim.text,
     };
     widget.user["serial"] = serial.text;
     widget.user["emergency_1"] = emergency_1.text;
     widget.user["emergency_2"] = emergency_2.text;
-    widget.user["emergency_3"] = emergency_3.text;
-    widget.user["sim"] = sim.text;
+    widget.user["emergency_3"] = emergency_3.text;;
     // Encode Map to JSON
     var body = json.encode(data);
     var response = await http.post(Uri.parse(url),
@@ -94,8 +91,7 @@ class _ConfigchairState extends State<Configchair> {
       if(serial.text.isEmpty) serial.text=widget.user["serial"];
       if(emergency_1.text.isEmpty) emergency_1.text=widget.user["emergency_1"].toString();
       if(emergency_2.text.isEmpty) emergency_2.text=widget.user["emergency_2"].toString();
-      if(emergency_3.text.isEmpty) emergency_3.text=widget.user["emergency_3"].toString();
-      if(sim.text.isEmpty) sim.text=widget.user["sim"];
+      if(emergency_3.text.isEmpty) emergency_3.text=widget.user["emergency_3"].toString();;
     };
   }
 
@@ -200,21 +196,6 @@ class _ConfigchairState extends State<Configchair> {
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Insira um contacto válido!';
-                      }
-                      return null;
-                    },
-                  ),
-
-                  TextFormField(
-                    controller: sim,
-                    decoration: InputDecoration(
-                      hintText: widget.user["sim"].toString(),
-                      labelText: "PIN do SimCard",
-                      floatingLabelBehavior: FloatingLabelBehavior.always,
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Insira um sim PIN válido!';
                       }
                       return null;
                     },
