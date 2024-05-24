@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-import 'package:myapp/pages/dashboard.dart';
+import 'package:myapp/main_pages/dashboard.dart';
 
 class Configchair extends StatefulWidget {
   final user;
@@ -113,7 +113,7 @@ class _ConfigchairState extends State<Configchair> {
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  'Configuração da Cadeira',
+                  'Editar Contatos',
                   style: TextStyle(fontFamily: 'Bebas', fontSize: 30),
                 ),
               ),

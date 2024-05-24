@@ -53,7 +53,7 @@ class _HistoryState extends State<History> {
                 padding: EdgeInsets.all(3.0),
                 scrollDirection: Axis.vertical,
                 children: <Widget>[
-                  for (int i=0; i < snapshot.data['events'].length;i++)
+                  for (int i=snapshot.data['events'].length-1; i >= 0;i--)
                     makeHistoryItem(snapshot.data['events'][i]),
                 ],
               ),
@@ -71,7 +71,25 @@ class _HistoryState extends State<History> {
         elevation: 1.0,
         margin: new EdgeInsets.all(8.0),
         child: Container(
-          decoration: BoxDecoration(color: Colors.grey,
+          decoration:
+          BoxDecoration(color: snapshot['temperature'] > 40
+              && snapshot['seat'] == 1
+              && snapshot['belt'] == 1
+              && snapshot['car'] == 1 ? Colors.red : Colors.green,
+              borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                  bottomLeft: Radius.circular(20),
+                  bottomRight: Radius.circular(20)
+              ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.5),
+                spreadRadius: 5,
+                blurRadius: 7,
+                offset: Offset(0, 3), // changes position of shadow
+              ),
+            ],
           ),
           child: new InkWell(
             onTap: () {},
@@ -90,16 +108,16 @@ class _HistoryState extends State<History> {
                 ),
                 SizedBox(height: 1.0),
                 new Center(
-                  child: new Text('Viatura: '+snapshot['car'].toString() +
-                      ' Cinto: '+snapshot['belt'].toString() + '\n' +
-                      'Bluetooth: '+snapshot['blue'].toString() +
-                      ' Criança: '+snapshot['seat'].toString() + '\n' +
-                      'Temperatura: '+snapshot['temperature'].toString() +
-                      ' Humidade: '+snapshot['humidity'].toString() + '\n' +
-                      'Localização: '+snapshot['lat'].toString() +
-                      ' '+snapshot['long'].toString(),
+                  child: new Text('Viatura: ${snapshot['car']==1 ? 'Fechada':'Aberta'}'+
+                      ' Cinto: ${snapshot['belt']==1 ? 'Fechado':'Aberto'}' + '\n' +
+                      'Bluetooth: ${snapshot['blue']==1 ? 'Emparelhado':'Desemparelhado'}'+
+                      ' Criança: ${snapshot['seat']==1 ? 'Presente':'Ausente'}'+ '\n' +
+                      'Temperatura: '+snapshot['temperature'].toString() +'º'+
+                      ' Humidade: '+snapshot['humidity'].toString() + '%\n' +
+                      'Latitude: '+snapshot['lat'].toString() +
+                      ' Longitude: '+snapshot['long'].toString(),
                       style:
-                      new TextStyle(fontSize: 15.0, color: Colors.black))
+                      new TextStyle(fontSize: 14.0, color: Colors.black))
                 )
               ],
             ),

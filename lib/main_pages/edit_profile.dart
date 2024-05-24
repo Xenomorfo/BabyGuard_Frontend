@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-import 'package:myapp/pages/dashboard.dart';
+import 'package:myapp/main_pages/dashboard.dart';
 
 class Editprofile extends StatefulWidget {
 
@@ -178,7 +178,7 @@ class _EditprofileState extends State<Editprofile> {
 
                     ),
                     validator: (value) {
-                      if (value == null || value.isEmpty) {
+                      if (value == null || value.isEmpty || value.length < 10) {
                         return 'Insira um número de série válido!';
                       }
                       return null;

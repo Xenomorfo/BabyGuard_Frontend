@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
-import 'package:myapp/pages/login.dart';
+import 'package:myapp/main_pages/login.dart';
 import 'dart:convert';
 
 class Signup extends StatefulWidget {

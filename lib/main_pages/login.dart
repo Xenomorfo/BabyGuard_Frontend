@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/pages/signup.dart';
-import 'package:myapp/pages/renew_password.dart';
-import 'package:myapp/pages/dashboard.dart';
-import 'package:myapp/pages/new_password.dart';
+import 'package:myapp/main_pages/edit_profile.dart';
+import 'package:myapp/main_pages/signup.dart';
+import 'package:myapp/main_pages/renew_password.dart';
+import 'package:myapp/main_pages/dashboard.dart';
+import 'package:myapp/main_pages/new_password.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
@@ -120,15 +121,9 @@ class _MyHomePageState extends State<MyHomePage> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => Dashboard(
-              user: userData,
-              /*id: userData["id"],
-              name: userData["name"],
-              email: userData["email"],
-              contact: userData["contact"],
-              serial: userData["serial"],
-              password: userData["password"],
-              token: userData["token"]*/)
+          builder: (context) => userData['serial'].toString().length == 10 ?
+            Dashboard(
+              user: userData) : Editprofile(user: userData)
         ),
       );
 
@@ -136,7 +131,8 @@ class _MyHomePageState extends State<MyHomePage> {
         context: context,
         builder: (context) => AlertDialog(
           title: Text("Olá " + userData['name'] ),
-          content: Text("Autênticação bem-sucedida"),
+          content: userData['serial'].toString().length == 10 ?
+            Text("Autênticação bem-sucedida") : Text("Número de série da cadeira inválido."),
           actions: [
             MaterialButton(
               color: Colors.lightBlue,
@@ -254,7 +250,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       child: MaterialButton(
                         color: Colors.lightBlue,
                         child: Text(
-                          "Login",
+                          "Entrar",
                           style: TextStyle(color: Colors.white),
                         ),
                         onPressed: () {
