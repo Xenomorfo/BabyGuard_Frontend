@@ -34,7 +34,7 @@ class _EditprofileState extends State<Editprofile> {
     widget.user["email"] = data["email"];
     widget.user["contact"] = data["contact"];
     widget.user["name"] = data["name"];
-    widget.user["serial"] = data["serial"];
+
     widget.user["emergency_1"] = data["contact"];
     // Encode Map to JSON
     var body = json.encode(data);
@@ -61,7 +61,26 @@ class _EditprofileState extends State<Editprofile> {
               ],
             ),
       );
+    } else if (userData['msg'] == 'Serial already taken') {
+      showDialog(
+        context: context,
+        builder: (context) =>
+            AlertDialog(
+              title: Text("Erro"),
+              content: Text("Essa cadeira já existe. Alteração anulada."),
+              actions: [
+                MaterialButton(
+                  color: Colors.red,
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text("Ok"),
+                )
+              ],
+            ),
+      );
     } else {
+      widget.user["serial"] = data["serial"];
       showDialog(
         context: context,
         builder: (context) =>
