@@ -387,17 +387,17 @@ class _DashboardState extends State<Dashboard> {
                                 ],
                             style: ButtonStyle(
                                 backgroundColor:
-                                    MaterialStateProperty.all(Colors.blue),
+                                    WidgetStateProperty.all(Colors.blue),
                                 foregroundColor:
-                                    MaterialStateProperty.all(Colors.white)),
+                                    WidgetStateProperty.all(Colors.white)),
                             child: Text('Sim')),
                         TextButton(
                             onPressed: () => Navigator.of(context).pop(),
                             style: ButtonStyle(
                                 backgroundColor:
-                                    MaterialStateProperty.all(Colors.blue),
+                                    WidgetStateProperty.all(Colors.blue),
                                 foregroundColor:
-                                    MaterialStateProperty.all(Colors.white)),
+                                    WidgetStateProperty.all(Colors.white)),
                             child: Text('Não')),
                       ],
                     );
