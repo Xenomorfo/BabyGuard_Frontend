@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_layout_grid/flutter_layout_grid.dart';
 import 'package:http/http.dart' as http;
+import 'package:myapp/main_pages/dash_web.dart';
 import 'dart:convert';
 
 import 'package:myapp/main_pages/dashboard.dart';
@@ -8,8 +10,9 @@ import 'package:myapp/main_pages/dashboard.dart';
 class Editprofile extends StatefulWidget {
 
   final user;
+  final Widget? sidebar;
 
-  const Editprofile({super.key, required this.user});
+  const Editprofile({super.key, required this.user, this.sidebar});
 
   @override
   State<Editprofile> createState() => _EditprofileState();
@@ -102,73 +105,103 @@ class _EditprofileState extends State<Editprofile> {
   }
 
 
-
   @override
   void initState() {
     super.initState();
     if (widget.user["id"] != null) {
-      if(name.text.isEmpty) name.text=widget.user["name"];
-      if(contact.text.isEmpty) contact.text=widget.user["contact"].toString();
-      if(serial.text.isEmpty) serial.text=widget.user["serial"];
+      if (name.text.isEmpty) name.text = widget.user["name"];
+      if (contact.text.isEmpty)
+        contact.text = widget.user["contact"].toString();
+      if (serial.text.isEmpty) serial.text = widget.user["serial"];
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    if (MediaQuery
+        .of(context)
+        .size
+        .width < 640)
+      return Scaffold(
         appBar: AppBar(
           title: Text('Editar Perfil'),
         ),
         body: Stack(
+          alignment: Alignment.center,
           children: [
-            Container(
-              color: Colors.grey[100],
-            ),
             Positioned(
-              top: 80,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  'Editar Perfil',
-                  style: TextStyle(fontFamily: 'Bebas', fontSize: 30),
+              top: 0,
+              child: Align(
+                child: CircleAvatar(
+                  backgroundImage: AssetImage("images/bebe_auto_clip.jpg"),
+                  radius: 100,
                 ),
               ),
             ),
             Positioned(
-              top: 120,
+              top: 240,
               child: Container(
-                width: MediaQuery.of(context).size.width,
-                child: Form(
-                  autovalidateMode: AutovalidateMode.onUserInteraction, // this to show error when user is in some textField
-                  key: _formKey,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column (
-                    children:<Widget> [
-                      TextFormField(
-                        readOnly: true,
-                        controller: email,
-                        decoration: InputDecoration(
-                          labelText: "E-mail",
-                          hintText: widget.user["email"],
-                          floatingLabelBehavior: FloatingLabelBehavior.always,
-                        ),
+                width: MediaQuery
+                    .of(context)
+                    .size
+                    .width,
 
-                      ),
-                      TextFormField(
-                        controller: name,
-                        decoration: InputDecoration(
-                          hintText: widget.user["name"],
-                          labelText: "Name",
+                child: Form(
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  // this to show error when user is in some textField
+                  key: _formKey,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      children: <Widget>[
+                        TextFormField(
+                          readOnly: true,
+                          controller: email,
+                          decoration: InputDecoration(
+                            enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                    color: Colors.blueGrey, width: 2.0
+                                )
+                            ),
+                            border: OutlineInputBorder(
+                                borderSide: BorderSide()),
+                            hintStyle: TextStyle(fontWeight: FontWeight.bold),
+                            fillColor: Colors.white,
+                            filled: true,
+                            prefixIcon: Icon(Icons.email_outlined),
+                            labelText: "E-mail",
+                            hintText: widget.user["email"],
+                            floatingLabelBehavior: FloatingLabelBehavior.always,
+                          ),
+
                         ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Insira um nome válido!';
-                          }
-                          return null;
-                        },
-                      ),
-                      TextFormField(
+                        SizedBox(height: 8.0),
+                        TextFormField(
+                          controller: name,
+                          decoration: InputDecoration(
+                            enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                    color: Colors.blueGrey, width: 2.0
+                                )
+                            ),
+                            border: OutlineInputBorder(
+                                borderSide: BorderSide()),
+                            fillColor: Colors.white,
+                            filled: true,
+                            prefixIcon: Icon(Icons.account_box_outlined),
+                            hintText: widget.user["name"],
+                            hintStyle: TextStyle(fontStyle: FontStyle.italic),
+                            labelText: "Nome",
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Insira um nome válido!';
+                            }
+                            return null;
+                          },
+                        ),
+                        SizedBox(height: 8.0),
+                        TextFormField(
                           controller: contact,
                           keyboardType: TextInputType.number,
                           inputFormatters: <TextInputFormatter>[
@@ -178,8 +211,22 @@ class _EditprofileState extends State<Editprofile> {
                             FilteringTextInputFormatter.digitsOnly
                           ],
                           decoration: InputDecoration(
+
+                            enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                    color: Colors.blueGrey, width: 2.0
+                                )
+                            ),
+                            border: OutlineInputBorder(
+                                borderSide: BorderSide()),
+                            fillColor: Colors.white,
+                            filled: true,
+                            prefixIcon: Icon(Icons.phone_outlined),
                             hintText: widget.user["contact"].toString(),
                             labelText: "Contacto",
+                            hintStyle: TextStyle(fontStyle: FontStyle.italic,
+                                color: Colors.red),
+
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -188,34 +235,244 @@ class _EditprofileState extends State<Editprofile> {
                             return null;
                           },
                         ),
+                        SizedBox(height: 8.0),
+                        TextFormField(
+                          controller: serial,
+                          decoration: InputDecoration(
+                            enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                    color: Colors.blueGrey, width: 2.0
+                                )
+                            ),
+                            border: OutlineInputBorder(
+                                borderSide: BorderSide()),
+                            fillColor: Colors.white,
+                            filled: true,
+                            prefixIcon: Icon(Icons.numbers_outlined),
+                            hintStyle: TextStyle(fontStyle: FontStyle.italic),
+                            hintText: widget.user["serial"],
+                            labelText: "Número de Série da Cadeira",
 
-                  TextFormField(
-                    controller: serial,
-                    decoration: InputDecoration(
-                      hintText: widget.user["serial"],
-                      labelText: "Número de Série da Cadeira",
-
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty ||
+                                value.length < 10) {
+                              return 'Insira um número de série válido!';
+                            }
+                            return null;
+                          },
+                        ),
+                      ],
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty || value.length < 10) {
-                        return 'Insira um número de série válido!';
-                      }
-                      return null;
-                    },
                   ),
-                    ],
-                  ),
-                ),
                 ),
               ),
             ),
-
-
             Positioned(
-              top: 430,
+              top: 540,
               child: Container(
-                width: MediaQuery.of(context).size.width,
+                width: MediaQuery
+                    .of(context)
+                    .size
+                    .width,
                 child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: MaterialButton(
+                    color: Colors.lightBlue,
+                    child: Text(
+                      "Atualizar",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) editProfile();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                Dashboard(
+                                    user: widget.user)),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+
+      );
+    else
+      return Scaffold
+        (
+          body: LayoutGrid(
+              areas: '''
+                  s h     
+                  s l   
+                  s l
+                ''',
+              // Concise track sizing extension methods 🔥
+              columnSizes: [0.7.fr, 3.8.fr],
+              rowSizes: [
+                0.2.fr,
+                1.0.fr,
+                3.0.fr,
+              ],
+              // Column and row gaps! 🔥
+              columnGap: 0,
+              rowGap: 0,
+              children: [
+              gridArea('s').containing(Container(
+              decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: Colors.black, width: 10)),
+              child: widget.sidebar)),
+          gridArea('l')
+              .containing(Stack(
+            alignment: Alignment.center,
+            children: [
+              Positioned(
+                top: 50,
+                child: Align(
+                  child: CircleAvatar(
+                    backgroundImage: AssetImage("images/bebe_auto_clip.jpg"),
+                    radius: 100,
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 280,
+                child: Container(
+                  width: 600,
+
+                  child: Form(
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    // this to show error when user is in some textField
+                    key: _formKey,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        children: <Widget>[
+                          TextFormField(
+                            readOnly: true,
+                            controller: email,
+                            decoration: InputDecoration(
+                              enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                      color: Colors.blueGrey, width: 2.0
+                                  )
+                              ),
+                              border: OutlineInputBorder(
+                                  borderSide: BorderSide()),
+                              hintStyle: TextStyle(fontWeight: FontWeight.bold),
+                              fillColor: Colors.white,
+                              filled: true,
+                              prefixIcon: Icon(Icons.email_outlined),
+                              labelText: "E-mail",
+                              hintText: widget.user["email"],
+                              floatingLabelBehavior: FloatingLabelBehavior
+                                  .always,
+                            ),
+
+                          ),
+                          SizedBox(height: 20.0),
+                          TextFormField(
+                            controller: name,
+                            decoration: InputDecoration(
+                              enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                      color: Colors.blueGrey, width: 2.0
+                                  )
+                              ),
+                              border: OutlineInputBorder(
+                                  borderSide: BorderSide()),
+                              fillColor: Colors.white,
+                              filled: true,
+                              prefixIcon: Icon(Icons.account_box_outlined),
+                              hintText: widget.user["name"],
+                              hintStyle: TextStyle(fontStyle: FontStyle.italic),
+                              labelText: "Nome",
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Insira um nome válido!';
+                              }
+                              return null;
+                            },
+                          ),
+                          SizedBox(height: 20.0),
+                          TextFormField(
+                            controller: contact,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: <TextInputFormatter>[
+                              // for below version 2 use this
+                              FilteringTextInputFormatter.allow(
+                                  RegExp(r'[0-9]')),
+                              // for version 2 and greater youcan also use this
+                              FilteringTextInputFormatter.digitsOnly
+                            ],
+                            decoration: InputDecoration(
+
+                              enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                      color: Colors.blueGrey, width: 2.0
+                                  )
+                              ),
+                              border: OutlineInputBorder(
+                                  borderSide: BorderSide()),
+                              fillColor: Colors.white,
+                              filled: true,
+                              prefixIcon: Icon(Icons.phone_outlined),
+                              hintText: widget.user["contact"].toString(),
+                              labelText: "Contacto",
+                              hintStyle: TextStyle(fontStyle: FontStyle.italic,
+                                  color: Colors.red),
+
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Insira um contacto válido!';
+                              }
+                              return null;
+                            },
+                          ),
+                          SizedBox(height: 20.0),
+                          TextFormField(
+                            controller: serial,
+                            decoration: InputDecoration(
+                              enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                      color: Colors.blueGrey, width: 2.0
+                                  )
+                              ),
+                              border: OutlineInputBorder(
+                                  borderSide: BorderSide()),
+                              fillColor: Colors.white,
+                              filled: true,
+                              prefixIcon: Icon(Icons.numbers_outlined),
+                              hintStyle: TextStyle(fontStyle: FontStyle.italic),
+                              hintText: widget.user["serial"],
+                              labelText: "Número de Série da Cadeira",
+
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty ||
+                                  value.length < 10) {
+                                return 'Insira um número de série válido!';
+                              }
+                              return null;
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 580,
+                child: Container(
+                  width: 100,
+                  child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: MaterialButton(
                       color: Colors.lightBlue,
@@ -224,20 +481,37 @@ class _EditprofileState extends State<Editprofile> {
                         style: TextStyle(color: Colors.white),
                       ),
                       onPressed: () {
-                        if(_formKey.currentState!.validate()) editProfile();
+                        if (_formKey.currentState!.validate()) editProfile();
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => Dashboard(
-                                   user: widget.user)),
+                              builder: (context) =>
+                                  Dashweb(
+                                      user: widget.user)),
                         );
                       },
                     ),
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-    );
+            ],
+          ),
+          ),
+          gridArea('h').containing(
+            Container(
+                color: Colors.black,
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Center(
+                        child: Text("Editar Perfil",
+                            style: TextStyle(
+                                fontSize: 20, color: Colors.white)),
+                      )
+                    ]
+                )
+            )
+          )
+      ]));
   }
 }

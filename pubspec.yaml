@@ -20,7 +20,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: '>=2.18.1 <3.0.0'
+  sdk: '>=2.18.0 <3.0.0'
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -45,10 +45,18 @@ dependencies:
   flutter_slidable: ^3.0.1
   uni_links: ^0.5.1
   confirm_dialog: ^1.0.1
-  intl: ^0.19.0
+  intl: ^0.17.0
+  flutter_map:
   google_maps_flutter:
   flutter_bluetooth_serial: ^0.4.0
   location: ^5.0.0
+  vibration: ^1.3.0
+  flutter_background:
+  flutter_launcher_icons:
+  syncfusion_flutter_gauges:
+  flutter_beep:
+  flutter_layout_grid: ^2.0.0
+  fl_chart:
 
 dev_dependencies:
   flutter_test:
@@ -75,7 +83,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - images/
-    
+
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
@@ -103,4 +111,4 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
-  
+

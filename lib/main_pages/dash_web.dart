@@ -1,37 +1,30 @@
 import 'dart:async';
-import 'dart:typed_data';
-import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
-import 'package:myapp/bluetooth_pages/MainPage.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:myapp/main_pages/config_chair.dart';
 import 'package:myapp/main_pages/edit_profile.dart';
 import 'package:myapp/main_pages/login.dart';
+import 'package:myapp/main_pages/map_web.dart';
 import 'dart:convert';
 import 'package:myapp/main_pages/new_password.dart';
-import 'package:vibration/vibration.dart';
-import 'history.dart';
-import 'map.dart';
-import 'package:flutter/services.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
-import 'package:flutter_beep/flutter_beep.dart';
+import 'history.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_layout_grid/flutter_layout_grid.dart';
+import 'package:fl_chart/fl_chart.dart';
 
-class Dashboard extends StatefulWidget {
+class Dashweb extends StatefulWidget {
   final user;
-  BluetoothConnection? device;
 
-  Dashboard({super.key, required this.user, this.device});
+  Dashweb({super.key, required this.user});
 
   @override
-  State<Dashboard> createState() => _DashboardState();
+  State<Dashweb> createState() => _DashwebState();
 }
 
-class _DashboardState extends State<Dashboard> {
-  bool isConnected = false;
-  StreamSubscription<BluetoothDiscoveryResult>? _streamSubscription;
+class _DashwebState extends State<Dashweb> {
   late var timer;
-  final _scaffoldKey = GlobalKey<ScaffoldState>();
 
   Future getLast() async {
     String token = widget.user["token"].toString();
@@ -60,147 +53,11 @@ class _DashboardState extends State<Dashboard> {
 
   @override
   void initState() {
-    if (mounted)
-
-      Timer.periodic(Duration(seconds: 5), (Timer t) {
-        _streamSubscription!.cancel();
-        FlutterBluetoothSerial.instance.cancelDiscovery();
-        if (mounted)
-          setState(() {
-            build(context);
-            _streamSubscription = FlutterBluetoothSerial.instance
-                .startDiscovery()
-                .listen((event) {
-              if (event.device.name == 'BabyGuard' && !event.device.isConnected)
-                connection(event.device.address);
-              else if (event.device.name == 'BabyGuard' &&
-                  event.device.isConnected) {
-                if (event.rssi.toInt() < -90) {
-                  Vibration.vibrate(pattern: [500, 1000, 500, 2000]);
-                  _showDialog(context, "Criança presente na cadeira!!",
-                      "ATENÇÃO", Colors.red);
-                  FlutterBeep.playSysSound(45);
-                }
-                debugPrint(event.rssi.toString());
-              }
-            });
-          });
-      });
     super.initState();
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
-    if (widget.device?.isConnected == null) {
-      isConnected = false;
-      blue_control();
-    } else if (!widget.device!.isConnected) {
-      isConnected = false;
-      blue_control();
-    } else {
-      isConnected = true;
-    }
-  }
-
-  // Bluetooth connection dashboard
-  Future<void> blue_control() async {
-    if (!isConnected && widget.user["serial"] != 0) {
-      _streamSubscription = await FlutterBluetoothSerial.instance
-          .startDiscovery()
-          .listen((r) async {
-        if (r.device.name == 'BabyGuard') connection(r.device.address);
-        _streamSubscription?.cancel();
+    Timer.periodic(Duration(seconds: 5), (Timer t){
+      setState(() {
       });
-      _streamSubscription!.onDone(() {
-        if (mounted)
-          setState(() {
-            isConnected = false;
-          });
-      });
-    }
-  }
 
-  @override
-  void dispose() {
-    // Avoid memory leak (`setState` after dispose) and cancel discovery
-    _streamSubscription?.cancel();
-    timer.cancel();
-    super.dispose();
-  }
-
-  Future<void> connection(address) async {
-    await BluetoothConnection.toAddress(address).then((_connection) {
-      print('Connected to the device: ' + address.toString());
-      isConnected = _connection.isConnected;
-      widget.device = _connection;
-      debugPrint(widget.device.toString());
-      if (isConnected) {
-        _connection.output.add(
-            Uint8List.fromList(utf8.encode(widget.user["serial"].toString())));
-        Timer(Duration(seconds: 5), () {
-          _showDialog(
-              context,
-              "Cadeira " + widget.user["serial"].toString() + " ativada",
-              "Ligação Bluetooth",
-              Colors.lightBlue);
-        });
-        _connection.input!.listen((_onDataReceived) {
-          if (String.fromCharCodes(_onDataReceived).substring(0, 2) ==
-              'No') {
-            Timer(Duration(seconds: 5), () {
-              _showDialog(
-                  context,
-                  "Cadeira " +
-                      widget.user["serial"].toString() +
-                      " não autorizada",
-                  "Ligação Bluetooth",
-                  Colors.lightBlue);
-            });
-            isConnected = false;
-          } else if (String.fromCharCodes(_onDataReceived).substring(0, 2) ==
-              'sl') {
-            print(String.fromCharCodes(_onDataReceived).substring(0, 2));
-            Timer(Duration(seconds: 5), () {
-              _showDialog(
-                  context,
-                  "Cadeira " +
-                      widget.user["serial"].toString() +
-                      " em modo Standby",
-                  "Ligação Bluetooth",
-                  Colors.lightBlue);
-            });
-            isConnected = false;
-          } else if (String.fromCharCodes(_onDataReceived).substring(0, 2) ==
-              'Au') {
-            Timer(Duration(seconds: 5), ()
-            {
-              _showDialog(
-                  context,
-                  "Cadeira " + widget.user["serial"].toString() + " ativada",
-                  "Ligação Bluetooth",
-                  Colors.lightBlue);
-            });
-              isConnected = true;
-
-          }
-        }).onDone(() {
-          Timer(Duration(seconds: 5), () {
-            _showDialog(
-                context,
-                "Cadeira " +
-                    widget.user["serial"].toString() +
-                    " desligada",
-                "Ligação Bluetooth",
-                Colors.lightBlue);
-          });
-          isConnected = false;
-        });
-    }}).catchError((error) {
-      print('Cannot connect, exception occured');
-      print(error);
-      isConnected = false;
-      _showDialog(
-          context,
-          "Verifique a cadeira " + widget.user["serial"].toString(),
-          "Ligação Bluetooth",
-          Colors.lightBlue);
     });
   }
 
@@ -224,22 +81,36 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  Widget menuDrawer() {
-    return Drawer(
-      child: ListView(
+  Widget menuGrid() {
+    return Scaffold(
+      body: ListView(
         children: [
-          UserAccountsDrawerHeader(
-            decoration: BoxDecoration(color: Colors.lightBlue),
-            currentAccountPicture: GestureDetector(
-                child: CircleAvatar(
-              backgroundImage: AssetImage("images/bebe_auto_clip.jpg"),
-            )),
-            accountName: Text(widget.user["name"]),
-            accountEmail: Text(''),
-          ),
+          Container(
+              color: Colors.black,
+              child: Column(children: [
+                SizedBox(height: 20.0),
+                Center(
+                    child: CircleAvatar(
+                        backgroundImage:
+                            AssetImage("images/bebe_auto_clip.jpg"),
+                        radius: 40)),
+                SizedBox(height: 10.0),
+                Center(
+                    child: Text("BabyGuard",
+                        style: TextStyle(fontSize: 20, color: Colors.white))),
+                SizedBox(height: 10.0),
+                Center(
+                    child: Text("Utilizador: " + widget.user["name"],
+                        style: TextStyle(fontSize: 10, color: Colors.white))),
+              ])),
           ListTile(
             onTap: () {
-              Navigator.pop(context);
+              Navigator.push(
+                  context,
+                MaterialPageRoute(
+                  builder: (context) => Dashweb(user: widget.user),
+                ),
+              );
             },
             leading: Icon(Icons.dashboard),
             title: Text(
@@ -256,7 +127,8 @@ class _DashboardState extends State<Dashboard> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => Maps(user: widget.user),
+                      builder: (context) =>
+                          Mapweb(user: widget.user, sidebar: menuGrid()),
                     ));
               } else {
                 showDialog(
@@ -290,7 +162,7 @@ class _DashboardState extends State<Dashboard> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => History(user: widget.user, allData: getAll()),
+                  builder: (context) => History(user: widget.user, allData: getAll(), sidebar: menuGrid()),
                 ),
               );
             },
@@ -306,7 +178,7 @@ class _DashboardState extends State<Dashboard> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => Editprofile(user: widget.user),
+                  builder: (context) => Editprofile(user: widget.user, sidebar: menuGrid()),
                 ),
               );
             },
@@ -322,7 +194,7 @@ class _DashboardState extends State<Dashboard> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => Configchair(user: widget.user),
+                  builder: (context) => Configchair(user: widget.user, sidebar: menuGrid()),
                 ),
               );
             },
@@ -334,26 +206,10 @@ class _DashboardState extends State<Dashboard> {
           ),
           ListTile(
             onTap: () {
-              //debugPrint("dashboard");
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => MainPage(user: widget.user),
-                ),
-              );
-            },
-            leading: Icon(Icons.bluetooth),
-            title: Text(
-              'Bluetooth',
-              style: TextStyle(color: Colors.blue.shade900),
-            ),
-          ),
-          ListTile(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => NovaPassword(user: widget.user),
+                  builder: (context) => NovaPassword(user: widget.user, sidebar:menuGrid()),
                 ),
               );
             },
@@ -375,8 +231,6 @@ class _DashboardState extends State<Dashboard> {
                       actions: <Widget>[
                         TextButton(
                             onPressed: () => [
-                                  _streamSubscription!.cancel(),
-                                  widget.device?.close(),
                                   Navigator.pushAndRemoveUntil(
                                       context,
                                       MaterialPageRoute(
@@ -414,17 +268,35 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  Widget build(BuildContext context) {
-    return WillPopScope(
-        onWillPop: () async {
-          return false;
-        },
+  Widget bottomTitleWidgets(double value, TitleMeta meta) {
+    const style = TextStyle(
+      fontSize: 10,
+      fontWeight: FontWeight.bold,
+    );
+
+
+    return SideTitleWidget(
+      axisSide: meta.axisSide,
+      space: 4,
+      child: Text('${value + 0}', style: style),
+    );
+  }
+
+  Widget leftTitleWidgets(double value, TitleMeta meta) {
+    const style = TextStyle(fontSize: 10);
+    return SideTitleWidget(
+      axisSide: meta.axisSide,
+      child: Text(
+        '${value + 0}',
+        style: style,
+      ),
+    );
+  }
+
+  Widget cards() {
+    return Container(
+        color: Colors.white,
         child: Scaffold(
-          key: _scaffoldKey,
-          appBar: AppBar(
-            title: Text('Painel'),
-          ),
-          drawer: menuDrawer(),
           body: FutureBuilder(
             future: getLast(),
             builder: (context, snapshot) {
@@ -435,7 +307,7 @@ class _DashboardState extends State<Dashboard> {
                     padding:
                         EdgeInsets.symmetric(vertical: 20.0, horizontal: 2.0),
                     child: GridView.count(
-                        crossAxisCount: 2,
+                        crossAxisCount: 8,
                         padding: EdgeInsets.all(3.0),
                         scrollDirection: Axis.vertical,
                         children: <Widget>[
@@ -631,19 +503,205 @@ class _DashboardState extends State<Dashboard> {
               } else {
                 return Container(
                     alignment: Alignment.topCenter,
-                    child: Column(children: [
-                      CircleAvatar(
-                        backgroundImage:
-                            AssetImage("images/bebe_auto_clip.jpg"),
-                        radius: 100,
-                      ),
-                      SizedBox(height: 8.0),
-                      Text("Sem dados disponiveis"),
-                    ]));
+                    child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          CircleAvatar(
+                            backgroundImage:
+                                AssetImage("images/bebe_auto_clip.jpg"),
+                            radius: 100,
+                          ),
+                          Text("Sem dados disponiveis"),
+                        ]));
               }
             },
           ),
         ));
+  }
+
+  Widget graph() {
+    return Container(
+        color: Colors.white,
+        child: Scaffold(
+            body: FutureBuilder(
+                future: getAll(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData && snapshot.data['events'].length > 0) {
+                    double count1 = 0.0;
+                    double count2 = 0.0;
+                    return Center(
+                        child: Container(
+                      color: Colors.white,
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                          left: 10,
+                          right: 18,
+                          top: 10,
+                          bottom: 4,
+                        ),
+                        child: LineChart(
+                          LineChartData(
+                            lineTouchData: const LineTouchData(enabled: false),
+                            lineBarsData: [
+                              LineChartBarData(
+                                spots: [
+                                  for(var s in snapshot.data['events'])
+                                    FlSpot(count1++,s['temperature'])
+                                ],
+                                isCurved: false,
+                                barWidth: 2,
+                                color: Colors.red,
+                                dotData: const FlDotData(
+                                  show: false,
+                                ),
+
+                              ),
+                              LineChartBarData(
+                                spots: [
+                                  for(var s in snapshot.data['events'])
+                                    FlSpot(count2++,s['humidity'])
+                                ],
+                                isCurved: false,
+                                barWidth: 2,
+                                color: Colors.blue,
+                                dotData: const FlDotData(
+                                  show: false,
+                                ),
+
+                              ),
+                            ],
+                            minY: 0,
+                            borderData: FlBorderData(
+                              show: false,
+                            ),
+                            titlesData: FlTitlesData(
+                              bottomTitles: AxisTitles(
+                                axisNameWidget: Text("Ocorrências"),
+                                sideTitles: SideTitles(
+                                  showTitles: true,
+                                  interval: 1,
+                                  getTitlesWidget: bottomTitleWidgets,
+                                ),
+                              ),
+                              leftTitles: AxisTitles(
+                                axisNameWidget: Text("Valores"),
+                                sideTitles: SideTitles(
+                                  showTitles: true,
+                                  getTitlesWidget: leftTitleWidgets,
+                                  interval: 5,
+                                  reservedSize: 36,
+                                ),
+                              ),
+                              topTitles: const AxisTitles(
+                                sideTitles: SideTitles(showTitles: false),
+                              ),
+                              rightTitles: const AxisTitles(
+                                sideTitles: SideTitles(showTitles: false),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ));
+                  } else {
+                    return Container(
+                        alignment: Alignment.topCenter,
+                        child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              CircleAvatar(
+                                backgroundImage:
+                                    AssetImage("images/bebe_auto_clip.jpg"),
+                                radius: 100,
+                              ),
+                              Text("Sem dados disponiveis"),
+                            ]));
+                  }
+                })));
+
+  }
+
+  Widget build(BuildContext context) {
+    return WillPopScope(
+        onWillPop: () async {
+          return false;
+        },
+        child: Container(
+            color: Colors.grey,
+            child: LayoutGrid(
+                // ASCII-art named areas 🔥
+                areas: '''
+                  s h
+                  s l     
+                  s g   
+                  s g
+                  s c 
+                ''',
+                // Concise track sizing extension methods 🔥
+                columnSizes: [0.7.fr, 3.8.fr],
+                rowSizes: [
+                  0.2.fr,
+                  0.1.fr,
+                  1.0.fr,
+                  1.8.fr,
+                  1.2.fr,
+                ],
+                // Column and row gaps! 🔥
+                columnGap: 0,
+                rowGap: 0,
+                // Handy grid placement extension methods on Widget 🔥
+                children: [
+                  gridArea('s').containing(Container(
+                      decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(color: Colors.black, width: 10)),
+                      child: menuGrid())),
+                  gridArea('c').containing(
+                    cards(),
+                  ),
+                  gridArea('g').containing(graph()),
+                  gridArea('l').containing(Container(
+                    color: Colors.black,
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                      children:[
+                        Text("Grafico Histórico de    ",style: const TextStyle(color: Colors.white,fontSize: 12)),
+                        Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: const BorderRadius.all(Radius.circular(4)),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Text("Temperatura     ", style: const TextStyle(color: Colors.white,fontSize: 12)),
+
+                        Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: Colors.blue,
+                            borderRadius: const BorderRadius.all(Radius.circular(4)),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Text("Humidade     ", style: const TextStyle(color: Colors.white,fontSize: 12)),
+                      ]
+                    )
+                  )),
+                  gridArea('h').containing(Container(
+                      color: Colors.black,
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Center(
+                              child: Text("Painel",
+                                  style: TextStyle(
+                                      fontSize: 20, color: Colors.white)),
+                            )
+                          ]))),
+                ])));
   }
 
   Card makeDashboardItem(

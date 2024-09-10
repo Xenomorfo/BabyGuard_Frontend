@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 class Maps extends StatefulWidget {
   final user;
 
+
   const Maps(
       {super.key, required this.user});
 
@@ -58,35 +59,40 @@ class _MapsState extends State<Maps> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text('Localização'),
-        ),
-        body: Stack(
+      appBar: AppBar(
+        title: Text('Localização'),
+      ),
+      body: Stack(
           children: [
-            GoogleMap(
-          onMapCreated: _onMapCreated,
-          initialCameraPosition: CameraPosition(
-            target: widget.user['lat'] != 0.1 && widget.user['long'] != 0.1 ?
-              LatLng(widget.user['lat'],widget.user['long']): _center,
-            zoom: 11.0,
-          ),
-          markers: {
-            Marker(
-              markerId: const MarkerId("Aqui"),
-              position: LatLng(widget.user['lat'],widget.user['long']),
-              icon: markerIcon,
-            ),
-          },
-        ),
-        ]
-        ),
+              GoogleMap(
+                onMapCreated: _onMapCreated,
+                initialCameraPosition: CameraPosition(
+                  target: widget.user['lat'] != 0.1 &&
+                      widget.user['long'] != 0.1 ?
+                  LatLng(widget.user['lat'], widget.user['long']) :
+                  _center,
+                  zoom: 11.0,
+                ),
+                markers: {
+                  Marker(
+                    markerId: const MarkerId("Aqui"),
+                    position: LatLng(widget.user['lat'], widget.user['long']),
+                    icon: markerIcon,
+                  ),
+                },
+              ),
+          ]
+      ),
       floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: Theme.of(context).primaryColor,
+        backgroundColor: Theme
+            .of(context)
+            .primaryColor,
         label: Text("Google Maps"),
-        onPressed: () => navigateTo(widget.user['lat'],widget.user['long']),
+        onPressed: () => navigateTo(widget.user['lat'], widget.user['long']),
         icon: Icon(Icons.map_outlined),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      );
+    );
+
   }
 }

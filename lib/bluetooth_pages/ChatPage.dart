@@ -41,7 +41,7 @@ class _ChatPage extends State<ChatPage> {
   void initState() {
     super.initState();
 
-    BluetoothConnection.toAddress(widget.server.address).then((_connection) {
+    BluetoothConnection.toAddress(widget.server.address).then((_connection) async {
       print('Connected to the device');
       connection = _connection;
       setState(() {
@@ -151,7 +151,7 @@ class _ChatPage extends State<ChatPage> {
                   child: IconButton(
                       icon: const Icon(Icons.send),
                       onPressed: isConnected
-                          ? () => _sendMessage(textEditingController.text)
+                          ? () => print(textEditingController.text)
                           : null),
                 ),
               ],
@@ -202,6 +202,7 @@ class _ChatPage extends State<ChatPage> {
           ),
         );
         _messageBuffer = dataString.substring(index);
+        print(dataString);
       });
     } else {
       _messageBuffer = (backspacesCounter > 0

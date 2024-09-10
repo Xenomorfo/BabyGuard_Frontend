@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:myapp/main_pages/edit_profile.dart';
 import 'package:myapp/main_pages/signup.dart';
 import 'package:myapp/main_pages/renew_password.dart';
 import 'package:myapp/main_pages/dashboard.dart';
+import 'package:myapp/main_pages/dash_web.dart';
 import 'package:myapp/main_pages/new_password.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -46,6 +48,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     initUniLinks();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom]);
 
   }
 
@@ -53,6 +56,7 @@ class _MyHomePageState extends State<MyHomePage> {
   TextEditingController password = TextEditingController();
 
   Future login() async {
+
     var url = "http://xenomorfo.ddns.net:3000/authenticate";
     Map data = {"email": email.text, "password": password.text};
 
@@ -118,14 +122,22 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       );
     } else {
+      if(MediaQuery.of(context).size.width < 640)
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => userData['serial'].toString().length == 10 ?
-            Dashboard(
-              user: userData) : Editprofile(user: userData)
+            Dashboard(user: userData) : Editprofile(user: userData)
         ),
       );
+      else
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => userData['serial'].toString().length == 10 ?
+              Dashweb(user: userData) : Editprofile(user: userData)
+          ),
+        );
 
       showDialog(
         context: context,
@@ -154,38 +166,31 @@ class _MyHomePageState extends State<MyHomePage> {
           return false;
         },
         child: Scaffold(
-
           appBar: AppBar(
-
             title: new Center(child: Text('Baby Guard')),
             backgroundColor: Colors.grey[100],
             foregroundColor: Colors.blue[900],
             automaticallyImplyLeading: false, // Nao permite voltar atras
           ),
           body: Stack(
+              alignment: Alignment.center,
             children: [
-              Container(
-                //color: Colors.grey[100],
-                decoration: BoxDecoration(
-                  border: Border(
-                    left: BorderSide(width: 1.0, color: Colors.black),
-                    right: BorderSide(width: 1.0, color: Colors.black),
+              Positioned(
+                top: 50,
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    child: CircleAvatar(
+                      backgroundImage: AssetImage("images/bebe_auto_clip.jpg"),
+                      radius: 100,
+                    ),
                   ),
                 ),
-              ),
-              Align(
-                alignment: Alignment.topCenter,
-                    child:  CircleAvatar(
-                      backgroundImage: AssetImage("images/bebe_auto_clip.jpg"),
-                      radius:100,
-                    ),
-              ),
-
 
               Positioned(
-                top: 190,
+                top: 240,
                 child: Container(
-                  width: MediaQuery.of(context).size.width,
+                  width: MediaQuery.of(context).size.width > 640 ? 600 :
+                  MediaQuery.of(context).size.width,
 
                   child: Form(
                     autovalidateMode: AutovalidateMode.onUserInteraction, // this to show error when user is in some textField
@@ -207,6 +212,8 @@ class _MyHomePageState extends State<MyHomePage> {
                         },
 
                       ),
+                        MediaQuery.of(context).size.width > 640 ? SizedBox(height: 20.0) :
+                        SizedBox(height: 8.0),
                         TextFormField(
                           obscureText: passwordVisible,
                           controller: password,
@@ -242,9 +249,10 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
 
               Positioned(
-                top: 360,
+                top: 410,
                 child: Container(
-                  width: MediaQuery.of(context).size.width,
+                  width: MediaQuery.of(context).size.width > 640 ? 600 :
+                  MediaQuery.of(context).size.width,
                   child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: MaterialButton(
@@ -260,9 +268,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
               Positioned(
-                top: 400,
+                top: 450,
                 child: Container(
-                  width: MediaQuery.of(context).size.width,
+                  width: MediaQuery.of(context).size.width > 640 ? 600 :
+                  MediaQuery.of(context).size.width,
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: MaterialButton(
@@ -283,10 +292,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
               Positioned(
-                top: 440,
+                top: 490,
                 child: Container(
-                  width: MediaQuery.of(context).size.width,
-
+                  width: MediaQuery.of(context).size.width > 640 ? 600 :
+                  MediaQuery.of(context).size.width,
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: MaterialButton(

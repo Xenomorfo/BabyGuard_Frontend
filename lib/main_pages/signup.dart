@@ -18,6 +18,8 @@ class _SignupState extends State<Signup> {
   TextEditingController email = TextEditingController();
   TextEditingController contact = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  bool passwordVisible = true;
+  bool confirmPasswordVisible = true;
 
   Future signUp() async {
     var url = "http://xenomorfo.ddns.net:3000/adduser";
@@ -71,7 +73,7 @@ class _SignupState extends State<Signup> {
           ],
         ),
       );
-  } else {
+    } else {
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -100,160 +102,464 @@ class _SignupState extends State<Signup> {
 
   @override
   Widget build(BuildContext context) {
+    if (MediaQuery.of(context).size.width < 640)
     return Scaffold(
-        appBar: AppBar(
-          title: Text('Registar'),
-        ),
-        body: Stack(
-            children: [
-              Container(
-                color: Colors.grey[100],
+      appBar: AppBar(
+        title: Text('Registar'),
+      ),
+      body: Stack(
+        alignment: Alignment.center,
+        children: [
+          Positioned(
+            top: 0,
+            child: Align(
+              child: CircleAvatar(
+                backgroundImage: AssetImage("images/bebe_auto_clip.jpg"),
+                radius: 100,
               ),
-              Positioned(
-                top: 20,
+            ),
+          ),
+          Positioned(
+            top: 210,
+            child: Container(
+              width: MediaQuery.of(context).size.width,
+              child: Form(
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                // this to show error when user is in some textField
+                key: _formKey,
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    'Registar',
-                    style: TextStyle(fontFamily: 'Bebas', fontSize: 30),
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 60,
-                child: Container(
-                  width: MediaQuery.of(context).size.width,
-                  child: Form(
-                  autovalidateMode: AutovalidateMode.onUserInteraction, // this to show error when user is in some textField
-                  key: _formKey,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column (
-                        children:<Widget> [
-                          TextFormField(
-                            controller: email,
-                            decoration: InputDecoration(
-                              labelText: 'Email',
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Insira um e-mail válido!';
-                              }
-                              return null;
-                            },
-                         ),
-                        TextFormField(
-                          controller: name,
-                          decoration: InputDecoration(
-                            labelText: 'Nome',
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Insira um nome válido!';
-                            }
-                            return null;
-                          },
+                  child: Column(
+                    children: <Widget>[
+                      TextFormField(
+                        controller: email,
+                        decoration: InputDecoration(
+                          enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  color: Colors.blueGrey, width: 2.0)),
+                          border: OutlineInputBorder(borderSide: BorderSide()),
+                          labelStyle: TextStyle(fontStyle: FontStyle.italic),
+                          fillColor: Colors.white,
+                          filled: true,
+                          prefixIcon: Icon(Icons.email_outlined),
+                          labelText: 'Email',
                         ),
-                        TextFormField(
-                          controller: contact,
-                          keyboardType: TextInputType.number,
-                          inputFormatters: <TextInputFormatter>[
-                            // for below version 2 use this
-                            FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
-                            // for version 2 and greater youcan also use this
-                            FilteringTextInputFormatter.digitsOnly
-                          ],
-                          decoration: InputDecoration(
-                            labelText: 'Contato',
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Insira um contato válido!';
-                            }
-                            return null;
-                          },
-                        ),
-                        TextFormField(
-                          controller: password,
-                          obscureText: true,
-                          enableSuggestions: false,
-                          autocorrect: false,
-                          decoration: InputDecoration(
-                            labelText: 'Senha',
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty ) {
-                              return 'Insira uma senha válida!';
-                            }
-                            return null;
-                          },
-                        ),
-                        TextFormField(
-                          controller: confirm,
-                          obscureText: true,
-                          enableSuggestions: false,
-                          autocorrect: false,
-                          decoration: InputDecoration(
-                            labelText: 'Confirmar Senha',
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Insira uma confirmação válida!';
-                            }
-                            return null;
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  ),
-                ),
-              ),
-
-
-              Positioned(
-                top: 430,
-                child: Container(
-                  width: MediaQuery.of(context).size.width,
-                  child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: MaterialButton(
-                        color: Colors.lightBlue,
-                        child: Text(
-                          "Registar",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        onPressed: () {
-                          if(_formKey.currentState!.validate()) signUp();
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Insira um e-mail válido!';
+                          }
+                          return null;
                         },
-                      )),
-                ),
-              ),
-              Positioned(
-                top: 470,
-                child: Container(
-                  width: MediaQuery.of(context).size.width,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: MaterialButton(
-                      child: Text(
-                        "Já registado? Faça Login",
-                        style: TextStyle(color: Colors.grey),
                       ),
-                      onPressed: () {
-                        //debugPrint("login");
-
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => MyHomePage()),
-                        );
-                      },
-                    ),
+                      SizedBox(height: 8.0),
+                      TextFormField(
+                        controller: name,
+                        decoration: InputDecoration(
+                          enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  color: Colors.blueGrey, width: 2.0)),
+                          border: OutlineInputBorder(borderSide: BorderSide()),
+                          labelStyle: TextStyle(fontStyle: FontStyle.italic),
+                          fillColor: Colors.white,
+                          filled: true,
+                          prefixIcon: Icon(Icons.person_2_outlined),
+                          labelText: 'Nome',
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Insira um nome válido!';
+                          }
+                          return null;
+                        },
+                      ),
+                      SizedBox(height: 8.0),
+                      TextFormField(
+                        controller: contact,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: <TextInputFormatter>[
+                          // for below version 2 use this
+                          FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+                          // for version 2 and greater youcan also use this
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
+                        decoration: InputDecoration(
+                          enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  color: Colors.blueGrey, width: 2.0)),
+                          border: OutlineInputBorder(borderSide: BorderSide()),
+                          labelStyle: TextStyle(fontStyle: FontStyle.italic),
+                          fillColor: Colors.white,
+                          filled: true,
+                          prefixIcon: Icon(Icons.phone_outlined),
+                          labelText: 'Contato',
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Insira um contato válido!';
+                          }
+                          return null;
+                        },
+                      ),
+                      SizedBox(height: 8.0),
+                      TextFormField(
+                        controller: password,
+                        obscureText: passwordVisible,
+                        enableSuggestions: false,
+                        autocorrect: false,
+                        decoration: InputDecoration(
+                            enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                    color: Colors.blueGrey, width: 2.0)),
+                            border:
+                                OutlineInputBorder(borderSide: BorderSide()),
+                            labelStyle: TextStyle(fontStyle: FontStyle.italic),
+                            fillColor: Colors.white,
+                            filled: true,
+                            prefixIcon: Icon(Icons.password_outlined),
+                            labelText: 'Senha',
+                            suffixIcon: IconButton(
+                                icon: Icon(passwordVisible
+                                    ? Icons.visibility
+                                    : Icons.visibility_off),
+                                onPressed: () {
+                                  setState(
+                                    () {
+                                      passwordVisible = !passwordVisible;
+                                    },
+                                  );
+                                })),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Insira uma senha válida!';
+                          }
+                          return null;
+                        },
+                      ),
+                      SizedBox(height: 8.0),
+                      TextFormField(
+                        controller: confirm,
+                        obscureText: passwordVisible,
+                        enableSuggestions: false,
+                        autocorrect: false,
+                        decoration: InputDecoration(
+                            enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                    color: Colors.blueGrey, width: 2.0)),
+                            border:
+                                OutlineInputBorder(borderSide: BorderSide()),
+                            labelStyle: TextStyle(fontStyle: FontStyle.italic),
+                            fillColor: Colors.white,
+                            filled: true,
+                            prefixIcon: Icon(Icons.password_outlined),
+                            labelText: 'Confirmar Senha',
+                            suffixIcon: IconButton(
+                                icon: Icon(passwordVisible
+                                    ? Icons.visibility
+                                    : Icons.visibility_off),
+                                onPressed: () {
+                                  setState(
+                                    () {
+                                      passwordVisible = !passwordVisible;
+                                    },
+                                  );
+                                })),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Insira uma confirmação válida!';
+                          }
+                          if (confirm.text != password.text) {
+                            return 'Senha e confirmação não coincidem!!';
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
                   ),
                 ),
               ),
-          ],
+            ),
           ),
-        );
+
+          Positioned(
+            top: 530,
+            child: Container(
+              width: MediaQuery.of(context).size.width,
+              child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: MaterialButton(
+                    color: Colors.lightBlue,
+                    child: Text(
+                      "Registar",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) signUp();
+                    },
+                  )),
+            ),
+          ),
+          Positioned(
+            top: 570,
+            child: Container(
+              width: MediaQuery.of(context).size.width,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: MaterialButton(
+                  child: Text(
+                    "Já registado? Faça Login",
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                  onPressed: () {
+                    //debugPrint("login");
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => MyHomePage()),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+    else return Scaffold(
+      body: Stack(
+        alignment: Alignment.center,
+        children: [
+          Positioned(
+            top: 50,
+            child: Align(
+              child: CircleAvatar(
+                backgroundImage: AssetImage("images/bebe_auto_clip.jpg"),
+                radius: 100,
+              ),
+            ),
+          ),
+          Positioned(
+            top: 300,
+            child: Container(
+              width: 600,
+              child: Form(
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                // this to show error when user is in some textField
+                key: _formKey,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    children: <Widget>[
+                      TextFormField(
+                        controller: email,
+                        decoration: InputDecoration(
+                          enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  color: Colors.blueGrey, width: 2.0)),
+                          border: OutlineInputBorder(borderSide: BorderSide()),
+                          labelStyle: TextStyle(fontStyle: FontStyle.italic),
+                          fillColor: Colors.white,
+                          filled: true,
+                          prefixIcon: Icon(Icons.email_outlined),
+                          labelText: 'Email',
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Insira um e-mail válido!';
+                          }
+                          return null;
+                        },
+                      ),
+                      SizedBox(height: 20.0),
+                      TextFormField(
+                        controller: name,
+                        decoration: InputDecoration(
+                          enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  color: Colors.blueGrey, width: 2.0)),
+                          border: OutlineInputBorder(borderSide: BorderSide()),
+                          labelStyle: TextStyle(fontStyle: FontStyle.italic),
+                          fillColor: Colors.white,
+                          filled: true,
+                          prefixIcon: Icon(Icons.person_2_outlined),
+                          labelText: 'Nome',
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Insira um nome válido!';
+                          }
+                          return null;
+                        },
+                      ),
+                      SizedBox(height: 20.0),
+                      TextFormField(
+                        controller: contact,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: <TextInputFormatter>[
+                          // for below version 2 use this
+                          FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+                          // for version 2 and greater youcan also use this
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
+                        decoration: InputDecoration(
+                          enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  color: Colors.blueGrey, width: 2.0)),
+                          border: OutlineInputBorder(borderSide: BorderSide()),
+                          labelStyle: TextStyle(fontStyle: FontStyle.italic),
+                          fillColor: Colors.white,
+                          filled: true,
+                          prefixIcon: Icon(Icons.phone_outlined),
+                          labelText: 'Contato',
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Insira um contato válido!';
+                          }
+                          return null;
+                        },
+                      ),
+                     SizedBox(height: 20.0),
+                      TextFormField(
+                        controller: password,
+                        obscureText: passwordVisible,
+                        enableSuggestions: false,
+                        autocorrect: false,
+                        decoration: InputDecoration(
+                            enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                    color: Colors.blueGrey, width: 2.0)),
+                            border:
+                            OutlineInputBorder(borderSide: BorderSide()),
+                            labelStyle: TextStyle(fontStyle: FontStyle.italic),
+                            fillColor: Colors.white,
+                            filled: true,
+                            prefixIcon: Icon(Icons.password_outlined),
+                            labelText: 'Senha',
+                            suffixIcon: IconButton(
+                                icon: Icon(passwordVisible
+                                    ? Icons.visibility
+                                    : Icons.visibility_off),
+                                onPressed: () {
+                                  setState(
+                                        () {
+                                      passwordVisible = !passwordVisible;
+                                    },
+                                  );
+                                })),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Insira uma senha válida!';
+                          }
+                          return null;
+                        },
+                      ),
+                      SizedBox(height: 20.0),
+                      TextFormField(
+                        controller: confirm,
+                        obscureText: passwordVisible,
+                        enableSuggestions: false,
+                        autocorrect: false,
+                        decoration: InputDecoration(
+                            enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                    color: Colors.blueGrey, width: 2.0)),
+                            border:
+                            OutlineInputBorder(borderSide: BorderSide()),
+                            labelStyle: TextStyle(fontStyle: FontStyle.italic),
+                            fillColor: Colors.white,
+                            filled: true,
+                            prefixIcon: Icon(Icons.password_outlined),
+                            labelText: 'Confirmar Senha',
+                            suffixIcon: IconButton(
+                                icon: Icon(passwordVisible
+                                    ? Icons.visibility
+                                    : Icons.visibility_off),
+                                onPressed: () {
+                                  setState(
+                                        () {
+                                      passwordVisible = !passwordVisible;
+                                    },
+                                  );
+                                })),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Insira uma confirmação válida!';
+                          }
+                          if (confirm.text != password.text) {
+                            return 'Senha e confirmação não coincidem!!';
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          Positioned(
+            top: 650,
+            child: Container(
+              width: 600,
+              child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: MaterialButton(
+                    color: Colors.lightBlue,
+                    child: Text(
+                      "Registar",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) signUp();
+                    },
+                  )),
+            ),
+          ),
+          Positioned(
+            top: 700,
+            child: Container(
+              width: 600,
+              child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: MaterialButton(
+                    color: Colors.lightBlue,
+                    child: Text(
+                      "Voltar",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    onPressed: () {
+                     Navigator.pop(context);
+                    },
+                  )),
+            ),
+          ),
+          Positioned(
+            top: 750,
+            child: Container(
+              width: 600,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: MaterialButton(
+                  child: Text(
+                    "Já registado? Faça Login",
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                  onPressed: () {
+                    //debugPrint("login");
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => MyHomePage()),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+
+        ],
+      ),
+    );
   }
 }
