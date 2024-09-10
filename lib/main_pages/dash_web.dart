@@ -61,26 +61,6 @@ class _DashwebState extends State<Dashweb> {
     });
   }
 
-  Future<dynamic> _showDialog(
-      BuildContext context, String status, String title, Color color) {
-    return showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Center(child: Text(title)),
-        content: Text(status),
-        actions: [
-          MaterialButton(
-            color: color,
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: Text("Ok"),
-          )
-        ],
-      ),
-    );
-  }
-
   Widget menuGrid() {
     return Scaffold(
       body: ListView(
