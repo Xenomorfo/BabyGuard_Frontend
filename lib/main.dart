@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:myapp/main_pages/login.dart';
+import 'package:myapp/services/notify_service.dart';
 
-void main() {
+void main () {
+
+  WidgetsFlutterBinding.ensureInitialized();
+  NotificationService().initNotification();
+
   runApp(const MyApp());
 }
 

@@ -16,10 +16,12 @@ import 'map.dart';
 import 'package:flutter/services.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
 import 'package:flutter_beep/flutter_beep.dart';
+import 'package:myapp/services/notify_service.dart';
 
 class Dashboard extends StatefulWidget {
   final user;
   BluetoothConnection? device;
+  String? rssi;
 
   Dashboard({super.key, required this.user, this.device});
 
@@ -30,8 +32,8 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   bool isConnected = false;
   StreamSubscription<BluetoothDiscoveryResult>? _streamSubscription;
-  late var timer;
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+  Timer? timer;
 
   Future getLast() async {
     String token = widget.user["token"].toString();
@@ -43,7 +45,10 @@ class _DashboardState extends State<Dashboard> {
     });
     widget.user['lat'] = jsonDecode(response.body)['events']['lat'];
     widget.user['long'] = jsonDecode(response.body)['events']['long'];
-
+    widget.user['seat'] = jsonDecode(response.body)['events']['seat'];
+    widget.user['car'] = jsonDecode(response.body)['events']['car'];
+    widget.user['belt'] = jsonDecode(response.body)['events']['belt'];
+    widget.user['temp'] = jsonDecode(response.body)['events']['temperature'];
     return json.decode(response.body);
   }
 
@@ -55,13 +60,13 @@ class _DashboardState extends State<Dashboard> {
       'Accept': 'application/json',
       'Authorization': 'Bearer $token',
     });
+
     return json.decode(response.body);
   }
 
   @override
   void initState() {
     if (mounted)
-
       Timer.periodic(Duration(seconds: 5), (Timer t) {
         _streamSubscription!.cancel();
         FlutterBluetoothSerial.instance.cancelDiscovery();
@@ -75,14 +80,39 @@ class _DashboardState extends State<Dashboard> {
                 connection(event.device.address);
               else if (event.device.name == 'BabyGuard' &&
                   event.device.isConnected) {
-                if (event.rssi.toInt() < -90) {
+                if (event.rssi.toInt() < -90 && widget.user["seat"] == 1
+                && widget.user['car'] == 1) {
+                  NotificationService().showNotification(
+                      title: "ATENÇÃO", body: "Criança presente na cadeira!!");
                   Vibration.vibrate(pattern: [500, 1000, 500, 2000]);
                   _showDialog(context, "Criança presente na cadeira!!",
                       "ATENÇÃO", Colors.red);
                   FlutterBeep.playSysSound(45);
+
+                } else if (event.rssi.toInt() < -90 && widget.user["seat"] == 1
+                && widget.user['belt'] == 0) {
+                  NotificationService().showNotification(
+                      title: "ATENÇÃO", body: "Criança não segura na cadeira!!");
+                  Vibration.vibrate(pattern: [500, 1000, 500, 2000]);
+                  _showDialog(context, "Criança não segura na cadeira!!",
+                      "ATENÇÃO", Colors.red);
+                  FlutterBeep.playSysSound(45);
                 }
-                debugPrint(event.rssi.toString());
+                else if (event.rssi.toInt() < -90 && widget.user["seat"] == 1
+                    && widget.user['belt'] == 1 && widget.user['temp'] > 35) {
+                  NotificationService().showNotification(
+                      title: "ATENÇÃO", body: "Criança sob intenso calor na cadeira!!");
+                  Vibration.vibrate(pattern: [500, 1000, 500, 2000]);
+                  _showDialog(context, "Criança sob intenso calor na cadeira!!",
+                      "ATENÇÃO", Colors.red);
+                  FlutterBeep.playSysSound(45);
+                }
               }
+              /*debugPrint(event.rssi.toString());
+              debugPrint(widget.user['seat'].toString());
+              debugPrint(widget.user['car'].toString());
+              debugPrint(widget.user['belt'].toString());
+              debugPrint(widget.user['temp'].toString());*/
             });
           });
       });
@@ -120,8 +150,9 @@ class _DashboardState extends State<Dashboard> {
   @override
   void dispose() {
     // Avoid memory leak (`setState` after dispose) and cancel discovery
-    _streamSubscription?.cancel();
-    timer.cancel();
+    _streamSubscription!.cancel();
+    widget.device?.close();
+    timer?.cancel();
     super.dispose();
   }
 
@@ -134,65 +165,58 @@ class _DashboardState extends State<Dashboard> {
       if (isConnected) {
         _connection.output.add(
             Uint8List.fromList(utf8.encode(widget.user["serial"].toString())));
-        Timer(Duration(seconds: 5), () {
-          _showDialog(
-              context,
-              "Cadeira " + widget.user["serial"].toString() + " ativada",
-              "Ligação Bluetooth",
-              Colors.lightBlue);
-        });
+        _showDialog(
+            context,
+            "Cadeira " + widget.user["serial"].toString() + " ativada",
+            "Ligação Bluetooth",
+            Colors.lightBlue);
         _connection.input!.listen((_onDataReceived) {
-          if (String.fromCharCodes(_onDataReceived).substring(0, 2) ==
-              'No') {
-            Timer(Duration(seconds: 5), () {
-              _showDialog(
-                  context,
-                  "Cadeira " +
-                      widget.user["serial"].toString() +
-                      " não autorizada",
-                  "Ligação Bluetooth",
-                  Colors.lightBlue);
-            });
+          if (String.fromCharCodes(_onDataReceived).substring(0, 2) == 'No') {
+            _showDialog(
+                context,
+                "Cadeira " +
+                    widget.user["serial"].toString() +
+                    " não autorizada",
+                "Ligação Bluetooth",
+                Colors.lightBlue);
+
             isConnected = false;
           } else if (String.fromCharCodes(_onDataReceived).substring(0, 2) ==
               'sl') {
             print(String.fromCharCodes(_onDataReceived).substring(0, 2));
-            Timer(Duration(seconds: 5), () {
-              _showDialog(
-                  context,
-                  "Cadeira " +
-                      widget.user["serial"].toString() +
-                      " em modo Standby",
-                  "Ligação Bluetooth",
-                  Colors.lightBlue);
-            });
+
+            _showDialog(
+                context,
+                "Cadeira " +
+                    widget.user["serial"].toString() +
+                    " em modo Standby",
+                "Ligação Bluetooth",
+                Colors.lightBlue);
+
             isConnected = false;
           } else if (String.fromCharCodes(_onDataReceived).substring(0, 2) ==
               'Au') {
-            Timer(Duration(seconds: 5), ()
-            {
+            Timer(Duration(seconds: 5), () {
               _showDialog(
                   context,
                   "Cadeira " + widget.user["serial"].toString() + " ativada",
                   "Ligação Bluetooth",
                   Colors.lightBlue);
             });
-              isConnected = true;
-
+            isConnected = true;
           }
         }).onDone(() {
           Timer(Duration(seconds: 5), () {
             _showDialog(
                 context,
-                "Cadeira " +
-                    widget.user["serial"].toString() +
-                    " desligada",
+                "Cadeira " + widget.user["serial"].toString() + " desligada",
                 "Ligação Bluetooth",
                 Colors.lightBlue);
           });
           isConnected = false;
         });
-    }}).catchError((error) {
+      }
+    }).catchError((error) {
       print('Cannot connect, exception occured');
       print(error);
       isConnected = false;
@@ -206,20 +230,25 @@ class _DashboardState extends State<Dashboard> {
 
   Future<dynamic> _showDialog(
       BuildContext context, String status, String title, Color color) {
+    Future.delayed(Duration(seconds: 3), () {
+      Navigator.of(context).pop(); // Close the dialog
+    });
     return showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => AlertDialog(
         title: Center(child: Text(title)),
-        content: Text(status),
-        actions: [
-          MaterialButton(
-            color: color,
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: Text("Ok"),
-          )
-        ],
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Image.asset(
+              'images/bebe_auto_clip.jpg', // Replace with your image path
+              width: 70, // Adjust image width as needed
+            ),
+            SizedBox(height: 5), // Adjust spacing as needed
+            Text(status),
+          ],
+        ),
       ),
     );
   }
@@ -290,7 +319,8 @@ class _DashboardState extends State<Dashboard> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => History(user: widget.user, allData: getAll()),
+                  builder: (context) =>
+                      History(user: widget.user, allData: getAll()),
                 ),
               );
             },
@@ -377,6 +407,7 @@ class _DashboardState extends State<Dashboard> {
                             onPressed: () => [
                                   _streamSubscription!.cancel(),
                                   widget.device?.close(),
+                                  timer?.cancel(),
                                   Navigator.pushAndRemoveUntil(
                                       context,
                                       MaterialPageRoute(
@@ -421,9 +452,7 @@ class _DashboardState extends State<Dashboard> {
         },
         child: Scaffold(
           key: _scaffoldKey,
-          appBar: AppBar(
-            title: Text('Painel'),
-          ),
+          appBar: AppBar(title: Text('Painel')),
           drawer: menuDrawer(),
           body: FutureBuilder(
             future: getLast(),
@@ -451,48 +480,57 @@ class _DashboardState extends State<Dashboard> {
                             makeDashboardItem(
                                 'Presente',
                                 'Criança',
-                                Color.fromRGBO(0, 150, 0, 1.0),
+                                Color.fromRGBO(250, 0, 0, 1.0),
                                 "images/baby-car-seat.png")
                           else
                             makeDashboardItem(
                                 'Ausente',
                                 'Criança',
-                                Color.fromRGBO(222, 215, 25, 1.0),
+                                Color.fromRGBO(0, 150, 0, 1.0),
                                 "images/no-baby-car-seat.png"),
                           // Cinto de segurança
                           if (snapshot.data['events']['belt'] == 1)
                             makeDashboardItem(
                                 'Fechado',
                                 'Cinto',
-                                Color.fromRGBO(0, 150, 0, 1.0),
+                                Color.fromRGBO(250, 0, 0, 1.0),
                                 "images/belt.png")
                           else
                             makeDashboardItem(
                                 'Aberto',
                                 'Cinto',
                                 Color.fromRGBO(222, 215, 25, 1.0),
-                                "images/belt.png"),
+                                "images/no-belt.png"),
                           // Estado portas da viatura
                           if (snapshot.data['events']['car'] == 1)
                             makeDashboardItem(
                                 'Fechada',
                                 'Viatura',
-                                Color.fromRGBO(0, 150, 0, 1.0),
+                                Color.fromRGBO(250, 0, 0, 1.0),
                                 "images/door-closed.png")
                           else
                             makeDashboardItem(
                                 'Aberta',
                                 'Viatura',
-                                Color.fromRGBO(250, 0, 0, 1.0),
+                                Color.fromRGBO(0, 150, 0, 1.0),
                                 "images/door-open.png"),
                           // Dados GPS
-                          makeDashboardItem(
-                              snapshot.data['events']['lat'].toString() +
-                                  "\n " +
-                                  snapshot.data['events']['long'].toString(),
-                              'Localização',
-                              Color.fromRGBO(0, 150, 0, 1.0),
-                              "images/map.png"),
+                          if (snapshot.data['events']['lat'] == 0.1 &&
+                              snapshot.data['events']['long'] == 0.1)
+                            makeDashboardItem(
+                                'Sem informação',
+                                'Localização',
+                                Color.fromRGBO(250, 0, 0, 1.0),
+                                "images/map.png")
+                          else
+                            makeDashboardItem(
+                                snapshot.data['events']['lat'].toString() +
+                                    "\n " +
+                                    snapshot.data['events']['long'].toString(),
+                                'Localização',
+                                Color.fromRGBO(0, 150, 0, 1.0),
+                                "images/map.png"),
+                          // Dados do Bluetooth
                           if (snapshot.data['events']['blue'] == 1)
                             makeDashboardItem(
                                 'Emparelhado',

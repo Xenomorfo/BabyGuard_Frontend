@@ -46,40 +46,37 @@ class _ConfigchairState extends State<Configchair> {
     var userData = json.decode(response.body);
     debugPrint(userData['msg']);
     if (userData['msg'] == 'User not found') {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text("Erro"),
-          content: Text("Utilizador Inválido"),
-          actions: [
-            MaterialButton(
-              color: Colors.red,
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text("Ok"),
-            )
-          ],
-        ),
-      );
+      _showDialog(context, "Utilizador Inválido", "ATENÇÃO", Colors.red);
     } else {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text("Mensagem"),
-          content: Text("Editado com sucesso"),
-          actions: [
-            MaterialButton(
-              color: Colors.lightBlue,
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text("Ok"),
-            )
+      _showDialog(context, "Editado com sucesso", "Mensagem", Colors.lightBlue);
+    }
+  }
+
+  Future<dynamic> _showDialog(
+      BuildContext context, String status, String title, Color color) {
+    Future.delayed(Duration(seconds: 3), () {
+      Navigator.of(context).pop(); // Close the dialog
+    });
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: Center(
+            child: Text(title)
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Image.asset(
+              'images/bebe_auto_clip.jpg', // Replace with your image path
+              width: 70, // Adjust image width as needed
+            ),
+            SizedBox(height: 5), // Adjust spacing as needed
+            Text(status),
           ],
         ),
-      );
-    }
+      ),
+    );
   }
 
   @override

@@ -30,22 +30,7 @@ class _NovaPasswordState extends State<NovaPassword> {
     if (password.text == conf_password.text) {
       updatePassword();
     } else {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text("Erro"),
-          content: Text("As password não correspondem"),
-          actions: [
-            MaterialButton(
-              color: Colors.red,
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text("Ok"),
-            )
-          ],
-        ),
-      );
+      _showDialog(context, "As password não correspondem", "ATENÇÃO", Colors.red);
     }
   }
 
@@ -61,22 +46,8 @@ class _NovaPasswordState extends State<NovaPassword> {
     var userData = json.decode(response.body);
 
     if (userData['msg'] == 'error') {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text("Erro"),
-          content: Text("O token expirou, tente repor novamente a password"),
-          actions: [
-            MaterialButton(
-              color: Colors.red,
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text("Ok"),
-            )
-          ],
-        ),
-      );
+      _showDialog(context, "O token expirou, tente repor novamente a password",
+          "ATENÇÃO", Colors.red);
     } else {
       Navigator.push(
         context,
@@ -84,24 +55,36 @@ class _NovaPasswordState extends State<NovaPassword> {
           builder: (context) => MyHomePage(),
         ),
       );
+      _showDialog(context, "Password atualizada com sucesso",
+          "Mensagem", Colors.lightBlue);
+    }
+  }
 
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text("Mensagem"),
-          content: Text("Password atualizada com sucesso"),
-          actions: [
-            MaterialButton(
-              color: Colors.lightBlue,
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text("Ok"),
-            )
+  Future<dynamic> _showDialog(
+      BuildContext context, String status, String title, Color color) {
+    Future.delayed(Duration(seconds: 3), () {
+      Navigator.of(context).pop(); // Close the dialog
+    });
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: Center(
+            child: Text(title)
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Image.asset(
+              'images/bebe_auto_clip.jpg', // Replace with your image path
+              width: 70, // Adjust image width as needed
+            ),
+            SizedBox(height: 5), // Adjust spacing as needed
+            Text(status),
           ],
         ),
-      );
-    }
+      ),
+    );
   }
 
   @override

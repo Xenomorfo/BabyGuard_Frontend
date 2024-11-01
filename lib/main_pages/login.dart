@@ -67,60 +67,15 @@ class _MyHomePageState extends State<MyHomePage> {
       response = await http.post(Uri.parse(url),
           headers: {"Content-Type": "application/json"}, body: body);
     } catch(error) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text("Erro"),
-          content: Text("Servidor fora de serviço!"),
-          actions: [
-            MaterialButton(
-              color: Colors.red,
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text("Ok"),
-            )
-          ],
-        ),
-      );
+      _showDialog(context, "Servidor fora de serviço!", "ATENÇÃO", Colors.red);
       throw Exception();
     }
     var userData = json.decode(response.body);
 
     if (userData['msg'] == 'User not found') {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text("Erro"),
-          content: Text("Utilizador Inválido"),
-          actions: [
-            MaterialButton(
-              color: Colors.red,
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text("Ok"),
-            )
-          ],
-        ),
-      );
+      _showDialog(context, "Utilizador Inválido", "ATENÇÃO", Colors.red);
     }else if(userData['msg'] == 'Wrong password'){
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text("Erro"),
-        content: Text("Senha Errada!"),
-        actions: [
-          MaterialButton(
-            color: Colors.red,
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: Text("Ok"),
-          )
-        ],
-      ),
-      );
+      _showDialog(context, "Senha Errada!", "ATENÇÃO", Colors.red);
     } else {
       if(MediaQuery.of(context).size.width < 640)
       Navigator.push(
@@ -138,25 +93,39 @@ class _MyHomePageState extends State<MyHomePage> {
               Dashweb(user: userData) : Editprofile(user: userData)
           ),
         );
+      if (userData['serial'].toString().length == 10)
+        _showDialog(context, "Autenticação bem-sucedida",
+            "Olá " + userData['name'], Colors.lightBlue);
+      else _showDialog(context, "Número de série da cadeira inválido.",
+          "Olá " + userData['name'], Colors.red);
+    }
+  }
 
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text("Olá " + userData['name'] ),
-          content: userData['serial'].toString().length == 10 ?
-            Text("Autênticação bem-sucedida") : Text("Número de série da cadeira inválido."),
-          actions: [
-            MaterialButton(
-              color: Colors.lightBlue,
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text("Ok"),
-            )
+  Future<dynamic> _showDialog(
+      BuildContext context, String status, String title, Color color) {
+    Future.delayed(Duration(seconds: 3), () {
+      Navigator.of(context).pop(); // Close the dialog
+    });
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: Center(
+            child: Text(title)
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Image.asset(
+              'images/bebe_auto_clip.jpg', // Replace with your image path
+              width: 70, // Adjust image width as needed
+            ),
+            SizedBox(height: 5), // Adjust spacing as needed
+            Text(status),
           ],
         ),
-      );
-    }
+      ),
+    );
   }
 
   @override

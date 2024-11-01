@@ -28,22 +28,8 @@ class _ReporPasswordState extends State<ReporPassword> {
     var userData = json.decode(response.body);
 
     if (userData['msg'] == 'User not found') {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text("Erro"),
-          content: Text("Este email não está associado a uma conta"),
-          actions: [
-            MaterialButton(
-              color: Colors.red,
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text("Ok"),
-            )
-          ],
-        ),
-      );
+      _showDialog(context, "Este email não está associado a uma conta",
+          "ATENÇÃO", Colors.red);
     } else {
       Navigator.push(
         context,
@@ -51,24 +37,36 @@ class _ReporPasswordState extends State<ReporPassword> {
           builder: (context) => MyHomePage(),
         ),
       );
+      _showDialog(context, "Email com nova senha enviado com sucesso!",
+          "Mensagem", Colors.lightBlue);
+    }
+  }
 
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text("Mensagem"),
-          content: Text("Email com nova senha enviado com sucesso!"),
-          actions: [
-            MaterialButton(
-              color: Colors.lightBlue,
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text("Ok"),
-            )
+  Future<dynamic> _showDialog(
+      BuildContext context, String status, String title, Color color) {
+    Future.delayed(Duration(seconds: 3), () {
+      Navigator.of(context).pop(); // Close the dialog
+    });
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: Center(
+            child: Text(title)
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Image.asset(
+              'images/bebe_auto_clip.jpg', // Replace with your image path
+              width: 70, // Adjust image width as needed
+            ),
+            SizedBox(height: 5), // Adjust spacing as needed
+            Text(status),
           ],
         ),
-      );
-    }
+      ),
+    );
   }
 
   @override

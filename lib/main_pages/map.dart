@@ -46,7 +46,7 @@ class _MapsState extends State<Maps> {
 
   void addCustomIcon() {
     BitmapDescriptor.asset(
-        const ImageConfiguration(), "images/baby-boy.png")
+        ImageConfiguration(size: Size.fromRadius(20)), "images/baby-boy.png")
         .then(
           (icon) {
         setState(() {

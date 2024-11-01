@@ -303,42 +303,49 @@ class _DashwebState extends State<Dashweb> {
                             makeDashboardItem(
                                 'Presente',
                                 'Criança',
-                                Color.fromRGBO(0, 150, 0, 1.0),
+                                Color.fromRGBO(250, 0, 0, 1.0),
                                 "images/baby-car-seat.png")
                           else
                             makeDashboardItem(
                                 'Ausente',
                                 'Criança',
-                                Color.fromRGBO(222, 215, 25, 1.0),
+                                Color.fromRGBO(0, 150, 0, 1.0),
                                 "images/no-baby-car-seat.png"),
                           // Cinto de segurança
                           if (snapshot.data['events']['belt'] == 1)
                             makeDashboardItem(
                                 'Fechado',
                                 'Cinto',
-                                Color.fromRGBO(0, 150, 0, 1.0),
+                                Color.fromRGBO(250, 0, 0, 1.0),
                                 "images/belt.png")
                           else
                             makeDashboardItem(
                                 'Aberto',
                                 'Cinto',
                                 Color.fromRGBO(222, 215, 25, 1.0),
-                                "images/belt.png"),
+                                "images/no-belt.png"),
                           // Estado portas da viatura
                           if (snapshot.data['events']['car'] == 1)
                             makeDashboardItem(
                                 'Fechada',
                                 'Viatura',
-                                Color.fromRGBO(0, 150, 0, 1.0),
+                                Color.fromRGBO(250, 0, 0, 1.0),
                                 "images/door-closed.png")
                           else
                             makeDashboardItem(
                                 'Aberta',
                                 'Viatura',
-                                Color.fromRGBO(250, 0, 0, 1.0),
+                                Color.fromRGBO(0, 150, 0, 1.0),
                                 "images/door-open.png"),
                           // Dados GPS
-                          makeDashboardItem(
+                          if (snapshot.data['events']['lat'] == 0.1 &&
+                              snapshot.data['events']['long'] == 0.1)
+                            makeDashboardItem(
+                                "Sem informação",
+                                'Localização',
+                                Color.fromRGBO(250, 0, 0, 1.0),
+                                "images/map.png")
+                          else makeDashboardItem(
                               snapshot.data['events']['lat'].toString() +
                                   "\n " +
                                   snapshot.data['events']['long'].toString(),

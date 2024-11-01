@@ -40,39 +40,11 @@ class _SignupState extends State<Signup> {
     var userData = json.decode(response.body);
     debugPrint(response.body);
     if (userData['msg'] == 'Already taken') {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text("Erro"),
-          content: Text("Já existe um utilizador registado com este email"),
-          actions: [
-            MaterialButton(
-              color: Colors.red,
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text("Ok"),
-            )
-          ],
-        ),
-      );
+      _showDialog(context, "Já existe um utilizador registado com este email",
+          "ATENÇÃO", Colors.red);
     } else if (password.text != confirm.text) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text("Erro"),
-          content: Text("Senha e confirmação diferentes"),
-          actions: [
-            MaterialButton(
-              color: Colors.red,
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text("Ok"),
-            )
-          ],
-        ),
-      );
+      _showDialog(context, "Senha e confirmação diferentes",
+          "ATENÇÃO", Colors.red);
     } else {
       Navigator.push(
         context,
@@ -80,24 +52,35 @@ class _SignupState extends State<Signup> {
           builder: (context) => MyHomePage(),
         ),
       );
+      _showDialog(context, "Registado com sucesso",
+          "Mensagem", Colors.lightBlue);
+    }
+  }
 
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text("Mensagem"),
-          content: Text("Registado com sucesso"),
-          actions: [
-            MaterialButton(
-              color: Colors.lightBlue,
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text("Ok"),
-            )
+  Future<dynamic> _showDialog(
+      BuildContext context, String status, String title, Color color) {
+    Future.delayed(Duration(seconds: 3), () {
+      Navigator.of(context).pop(); // Close the dialog
+    });
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Center(
+            child: Text(title)
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Image.asset(
+              'images/bebe_auto_clip.jpg', // Replace with your image path
+              width: 70, // Adjust image width as needed
+            ),
+            SizedBox(height: 5), // Adjust spacing as needed
+            Text(status),
           ],
         ),
-      );
-    }
+      ),
+    );
   }
 
   @override
@@ -115,12 +98,12 @@ class _SignupState extends State<Signup> {
             child: Align(
               child: CircleAvatar(
                 backgroundImage: AssetImage("images/bebe_auto_clip.jpg"),
-                radius: 100,
+                radius: 70,
               ),
             ),
           ),
           Positioned(
-            top: 210,
+            top: 140,
             child: Container(
               width: MediaQuery.of(context).size.width,
               child: Form(
